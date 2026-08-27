@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="https://img.icons8.com/?size=100&id=LTLZTUNlFQPy&format=png&color=000000">
     <title>Bonfire Radio - बोनफायर नाइट्स</title>
+    <!-- Preload ultra-optimized WebP artwork for instant render in milliseconds -->
+    <link rel="preload" as="image" href="models/main.webp" type="image/webp" fetchpriority="high">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Special+Elite&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -99,21 +101,18 @@
 
     <div class="relative w-full h-[100dvh] flex flex-col justify-between items-center overflow-hidden">
         
-        <!-- Ambient Deep Firelight Backdrop -->
-        <div class="absolute inset-0 bg-[#0d0705] pointer-events-none"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(179,71,33,0.22)_0%,_rgba(12,6,4,0.85)_70%,_#050201_100%)] pointer-events-none"></div>
+        <!-- Fullscreen Edge-to-Edge Artwork (Fills 100% of laptop and mobile screens) -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+            <picture class="w-full h-full block">
+                <source srcset="models/main.webp" type="image/webp">
+                <img id="mainBgImg" src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-cover object-center pointer-events-none select-none block" fetchpriority="high" loading="eager" decoding="async" />
+            </picture>
+        </div>
 
-        <!-- Full Crisp Artwork Stage (100% of the scene is always fully visible) -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-0 m-0">
-            <div id="artStageContainer" class="relative max-w-full max-h-full pointer-events-auto" style="aspect-ratio: 1536 / 1024; width: min(100vw, calc(100dvh * (1536 / 1024))); height: min(calc(100vw * (1024 / 1536)), 100dvh);">
-                <img src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-fill block pointer-events-none select-none" loading="eager" decoding="async" />
-
-                <!-- Pixel-locked Hotspot directly on the Diet Coke can on the stand -->
-                <div id="hiddenDietCoke" class="absolute cursor-pointer z-30"
-                    style="left: 3.8%; top: 54.2%; width: 4.2%; height: 7.2%; min-width: 36px; min-height: 44px; -webkit-tap-highlight-color: transparent; touch-action: manipulation;"
-                    title="A cold drink resting on the stand">
-                </div>
-            </div>
+        <!-- Pixel-locked Responsive Hotspot directly on the Diet Coke can -->
+        <div id="hiddenDietCoke" class="absolute cursor-pointer z-30"
+            style="-webkit-tap-highlight-color: transparent; touch-action: manipulation;"
+            title="A cold drink resting on the stand">
         </div>
 
         <!-- Subtle Atmospheric Vignette -->
@@ -1025,6 +1024,36 @@
         });
 
         const hiddenDietCoke = document.getElementById('hiddenDietCoke');
+        
+        function updateHotspotPosition() {
+            if (!hiddenDietCoke) return;
+            const W = window.innerWidth;
+            const H = window.innerHeight;
+            const W0 = 1536;
+            const H0 = 1024;
+            const S = Math.max(W / W0, H / H0);
+            const X_offset = (W - (W0 * S)) / 2;
+            const Y_offset = (H - (H0 * S)) / 2;
+            
+            // Exact coordinates of Diet Coke can in 1536x1024 artwork
+            const X0 = 76;
+            const Y0 = 572;
+            const canW = Math.max(32, Math.round(26 * S));
+            const canH = Math.max(46, Math.round(42 * S));
+            
+            const left = Math.round(X_offset + (X0 * S) - 4);
+            const top = Math.round(Y_offset + (Y0 * S) - 2);
+            
+            hiddenDietCoke.style.left = `${left}px`;
+            hiddenDietCoke.style.top = `${top}px`;
+            hiddenDietCoke.style.width = `${canW + 8}px`;
+            hiddenDietCoke.style.height = `${canH + 8}px`;
+        }
+
+        window.addEventListener('resize', updateHotspotPosition, { passive: true });
+        window.addEventListener('orientationchange', updateHotspotPosition, { passive: true });
+        updateHotspotPosition();
+
         if (hiddenDietCoke) {
             const triggerEasterEgg = async (e) => {
                 if (e) {
