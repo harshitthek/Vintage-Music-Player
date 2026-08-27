@@ -104,13 +104,13 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(179,71,33,0.22)_0%,_rgba(12,6,4,0.85)_70%,_#050201_100%)] pointer-events-none"></div>
 
         <!-- Full Crisp Artwork Stage (100% of the scene is always fully visible) -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="relative w-full h-full max-w-[calc(100dvh*1.5)] max-h-[100dvh] aspect-[3/2] pointer-events-auto" style="transform: translateZ(0);">
-                <img src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-contain pointer-events-none select-none" loading="eager" decoding="async" />
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-0 m-0">
+            <div id="artStageContainer" class="relative max-w-full max-h-full pointer-events-auto" style="aspect-ratio: 1536 / 1024; width: min(100vw, calc(100dvh * (1536 / 1024))); height: min(calc(100vw * (1024 / 1536)), 100dvh);">
+                <img src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-fill block pointer-events-none select-none" loading="eager" decoding="async" />
 
                 <!-- Pixel-locked Hotspot directly on the Diet Coke can on the stand -->
-                <div id="hiddenDietCoke" class="absolute cursor-pointer z-20"
-                    style="left: 4.8%; top: 55.6%; width: 2.2%; height: 4.5%; min-width: 24px; min-height: 36px;"
+                <div id="hiddenDietCoke" class="absolute cursor-pointer z-30"
+                    style="left: 3.8%; top: 54.2%; width: 4.2%; height: 7.2%; min-width: 36px; min-height: 44px; -webkit-tap-highlight-color: transparent; touch-action: manipulation;"
                     title="A cold drink resting on the stand">
                 </div>
             </div>
@@ -994,8 +994,11 @@
 
         const hiddenDietCoke = document.getElementById('hiddenDietCoke');
         if (hiddenDietCoke) {
-            hiddenDietCoke.addEventListener('click', async (e) => {
-                e.stopPropagation();
+            const triggerEasterEgg = (e) => {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
 
                 let song = {
                     id: 'bubblegum-princess',
@@ -1007,26 +1010,27 @@
                     liked: likedPreviews.some(s => s.id === 'bubblegum-princess')
                 };
 
-                try {
-                    const res = await fetch('https://itunes.apple.com/search?term=Princess+Bubblegum+ilyTOMMY&media=music&limit=3');
-                    const data = await res.json();
-                    const track = (data.results || []).find(t => t.previewUrl);
-                    if (track) {
-                        song = {
-                            id: 'itunes-' + track.trackId,
-                            title: 'Bubblegum Princess',
-                            artist: track.artistName + ' · Special Edition',
-                            decade: '20s',
-                            artwork: track.artworkUrl100 || 'models/diet_coke.png',
-                            previewUrl: track.previewUrl,
-                            liked: likedPreviews.some(s => s.id === 'itunes-' + track.trackId)
-                        };
-                    }
-                } catch (_) {}
-
+                // Trigger playback synchronously within the user touch/click gesture loop (required by iOS/Android)
                 currentPreviewList = [song];
                 playPreviewSong(song, 0);
-            });
+
+                // Fetch fresh artwork/metadata in background without interrupting playback
+                fetch('https://itunes.apple.com/search?term=Princess+Bubblegum+ilyTOMMY&media=music&limit=3')
+                    .then(r => r.json())
+                    .then(data => {
+                        const track = (data.results || []).find(t => t.previewUrl);
+                        if (track && songTitleEl.textContent === 'Bubblegum Princess') {
+                            song.artist = track.artistName + ' · Special Edition';
+                            if (track.artworkUrl100) song.artwork = track.artworkUrl100;
+                            artistNameEl.textContent = song.artist + ' · 2020\'s · 30s preview';
+                            if (song.artwork) albumArt.src = song.artwork;
+                        }
+                    })
+                    .catch(() => {});
+            };
+
+            hiddenDietCoke.addEventListener('click', triggerEasterEgg);
+            hiddenDietCoke.addEventListener('touchend', triggerEasterEgg, { passive: false });
         }
 
         document.addEventListener('keydown', (e) => {
