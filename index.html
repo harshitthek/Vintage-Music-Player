@@ -18,29 +18,25 @@
         .ui-font {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        .paper-grain {
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-        }
         .retro-shadow {
-            text-shadow: 3px 3px 0px rgba(15, 10, 5, 0.85), 
-                         1px 1px 0px rgba(0, 0, 0, 0.9);
+            text-shadow: 2px 2px 0px rgba(15, 10, 5, 0.85);
         }
         
         @keyframes slideUpFade1 {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideUpFade2 {
-            0% { opacity: 0; transform: translateY(35px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInSlow {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
+        @keyframes slideUpFade2 {
+            0% { opacity: 0; transform: translateY(25px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInSlow {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
         @keyframes playerEntrance {
-            0% { opacity: 0; transform: translateY(30px) scale(0.96); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+            0% { opacity: 0; transform: translateY(25px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes spinSlow {
             from { transform: rotate(0deg); }
@@ -48,32 +44,46 @@
         }
 
         .animate-title-1 {
-            animation: slideUpFade1 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: slideUpFade1 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform, opacity;
         }
         .animate-title-2 {
             opacity: 0;
-            animation: slideUpFade2 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+            animation: slideUpFade2 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+            will-change: transform, opacity;
         }
         .animate-subtitle {
             opacity: 0;
-            animation: fadeInSlow 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+            animation: fadeInSlow 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+            will-change: transform, opacity;
         }
         .animate-player {
-            animation: playerEntrance 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+            animation: playerEntrance 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+            will-change: transform, opacity;
         }
         .rotating-art {
             animation: spinSlow 12s linear infinite;
+            will-change: transform;
+            transform: translateZ(0);
         }
         .paused-art {
             animation-play-state: paused;
         }
 
         .mac-glass {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            background-color: rgba(22, 16, 14, 0.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.4);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .smooth-scroll {
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
         }
 
         .no-scrollbar::-webkit-scrollbar {
@@ -89,13 +99,14 @@
 
     <div class="relative w-full h-[100dvh] flex flex-col justify-between items-center overflow-hidden">
         
-        <!-- Ambient Blur Fill (Guarantees zero black bars on any aspect ratio) -->
-        <div class="absolute inset-0 bg-[url('models/main.png')] bg-cover bg-center filter blur-3xl scale-110 opacity-35 pointer-events-none"></div>
+        <!-- Ambient Deep Firelight Backdrop -->
+        <div class="absolute inset-0 bg-[#0d0705] pointer-events-none"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(179,71,33,0.22)_0%,_rgba(12,6,4,0.85)_70%,_#050201_100%)] pointer-events-none"></div>
 
         <!-- Full Crisp Artwork Stage (100% of the scene is always fully visible) -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="relative w-full h-full max-w-[calc(100dvh*1.5)] max-h-[100dvh] aspect-[3/2] pointer-events-auto">
-                <img src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-contain pointer-events-none select-none" />
+            <div class="relative w-full h-full max-w-[calc(100dvh*1.5)] max-h-[100dvh] aspect-[3/2] pointer-events-auto" style="transform: translateZ(0);">
+                <img src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-contain pointer-events-none select-none" loading="eager" decoding="async" />
 
                 <!-- Pixel-locked Hotspot directly on the Diet Coke can on the stand -->
                 <div id="hiddenDietCoke" class="absolute cursor-pointer z-20"
@@ -105,15 +116,14 @@
             </div>
         </div>
 
-        <!-- Atmospheric Vignette & Paper Grain -->
-        <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none"></div>
-        <div class="absolute inset-0 paper-grain pointer-events-none mix-blend-overlay opacity-40"></div>
+        <!-- Subtle Atmospheric Vignette -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/55 pointer-events-none"></div>
 
         <!-- Top Navigation Header -->
         <header class="w-full z-40 flex flex-col sm:flex-row items-center justify-between gap-2.5 px-3 sm:px-6 pt-3 sm:pt-6 max-w-7xl">
             
             <!-- Left Action Buttons -->
-            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start overflow-x-auto no-scrollbar py-0.5">
+            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start overflow-x-auto no-scrollbar smooth-scroll py-0.5">
                 <button id="searchSongBtn" class="mac-glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer flex-shrink-0" title="Add local Hindi mp3s and tag their decade">
                     <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/80 group-hover:text-white transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -135,7 +145,7 @@
             </div>
 
             <!-- Right Decade Filter Chips -->
-            <div id="decadeFilterBar" class="flex items-center gap-1 sm:gap-1.5 justify-start sm:justify-end w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5 max-w-full">
+            <div id="decadeFilterBar" class="flex items-center gap-1 sm:gap-1.5 justify-start sm:justify-end w-full sm:w-auto overflow-x-auto no-scrollbar smooth-scroll py-0.5 max-w-full">
                 <button data-decade="all" class="decade-chip active-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/90 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">All</button>
                 <button data-decade="50s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">50's</button>
                 <button data-decade="60s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">60's</button>
@@ -166,20 +176,20 @@
                 </div>
             </div>
 
-            <ul id="discoverSuggestions" class="hidden flex-col gap-0.5 overflow-y-auto px-1 flex-shrink-0" style="max-height:220px;"></ul>
+            <ul id="discoverSuggestions" class="hidden flex-col gap-0.5 overflow-y-auto smooth-scroll px-1 flex-shrink-0" style="max-height:220px;"></ul>
 
             <div id="discoverStatus" class="hidden flex-shrink-0 text-white/50 text-xs text-center py-2 px-1"></div>
 
-            <ul id="discoverResults" class="flex flex-col gap-0.5 overflow-y-auto flex-1 px-1"></ul>
+            <ul id="discoverResults" class="flex flex-col gap-0.5 overflow-y-auto smooth-scroll flex-1 px-1"></ul>
         </div>
 
         <!-- Playlist / Favorites Panel -->
-        <div id="playlistPanel" class="hidden fixed sm:absolute inset-x-3 top-24 sm:inset-auto sm:top-20 sm:right-6 z-50 mac-glass rounded-2xl w-auto sm:w-[280px] max-h-[60vh] overflow-y-auto p-3 shadow-2xl">
+        <div id="playlistPanel" class="hidden fixed sm:absolute inset-x-3 top-24 sm:inset-auto sm:top-20 sm:right-6 z-50 mac-glass rounded-2xl w-auto sm:w-[280px] max-h-[60vh] overflow-y-auto smooth-scroll p-3 shadow-2xl">
             <div class="flex items-center justify-between mb-2 px-1">
                 <h3 id="playlistPanelTitle" class="text-xs font-bold text-white/90 tracking-wide uppercase">Playlist</h3>
                 <button id="closePlaylistPanel" class="text-white/60 hover:text-white text-base leading-none p-1">✕</button>
             </div>
-            <ul id="playlistList" class="flex flex-col gap-1"></ul>
+            <ul id="playlistList" class="flex flex-col gap-1 smooth-scroll"></ul>
             <p id="playlistEmptyMsg" class="text-white/50 text-xs text-center py-4 hidden">No songs yet.</p>
         </div>
 
