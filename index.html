@@ -86,6 +86,13 @@
 
         <div class="absolute inset-0 paper-grain pointer-events-none mix-blend-overlay opacity-50"></div>
 
+        <!-- Hidden Diet Coke on the stand -->
+        <div id="hiddenDietCoke" class="absolute z-20 cursor-pointer select-none transition-transform duration-200 hover:scale-105 active:scale-95"
+            style="left: 8.4%; top: 59.2%; width: clamp(16px, 1.8vw, 26px); filter: drop-shadow(2px 5px 6px rgba(0,0,0,0.85)) drop-shadow(-1px -1px 3px rgba(255,140,50,0.3)) brightness(0.72) contrast(1.15) sepia(0.25) hue-rotate(-12deg) saturate(1.25);"
+            title="A cold drink resting on the stand">
+            <img src="models/diet_coke.png" alt="Diet Coke" class="w-full h-auto object-contain pointer-events-auto block" />
+        </div>
+
         <div class="absolute top-6 left-6 z-40 flex items-center gap-3">
             <button id="searchSongBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Add local Hindi mp3s and tag their decade">
                 <svg class="w-4 h-4 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -948,6 +955,43 @@
         playPauseBtn.addEventListener('click', () => {
             if (isPlaying) pauseSong(); else playSong();
         });
+
+        const hiddenDietCoke = document.getElementById('hiddenDietCoke');
+        if (hiddenDietCoke) {
+            hiddenDietCoke.addEventListener('click', async (e) => {
+                e.stopPropagation();
+
+                let song = {
+                    id: 'bubblegum-princess',
+                    title: 'Bubblegum Princess',
+                    artist: 'Diet Coke Special · ilyTOMMY',
+                    decade: '20s',
+                    artwork: 'models/diet_coke.png',
+                    previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/2f/f6/49/2ff6494e-ebad-85a7-2b76-d0925cf4f6a1/mzaf_3783394280351668694.plus.aac.p.m4a',
+                    liked: likedPreviews.some(s => s.id === 'bubblegum-princess')
+                };
+
+                try {
+                    const res = await fetch('https://itunes.apple.com/search?term=Princess+Bubblegum+ilyTOMMY&media=music&limit=3');
+                    const data = await res.json();
+                    const track = (data.results || []).find(t => t.previewUrl);
+                    if (track) {
+                        song = {
+                            id: 'itunes-' + track.trackId,
+                            title: 'Bubblegum Princess',
+                            artist: track.artistName + ' · Special Edition',
+                            decade: '20s',
+                            artwork: track.artworkUrl100 || 'models/diet_coke.png',
+                            previewUrl: track.previewUrl,
+                            liked: likedPreviews.some(s => s.id === 'itunes-' + track.trackId)
+                        };
+                    }
+                } catch (_) {}
+
+                currentPreviewList = [song];
+                playPreviewSong(song, 0);
+            });
+        }
 
         document.addEventListener('keydown', (e) => {
             const tag = (e.target && e.target.tagName || '').toLowerCase();
