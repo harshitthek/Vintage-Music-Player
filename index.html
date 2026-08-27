@@ -87,17 +87,27 @@
 </head>
 <body class="m-0 p-0 bg-neutral-950 text-neutral-100 overflow-hidden select-none ui-font h-[100dvh] w-screen">
 
-    <div class="h-[100dvh] w-full bg-[url('models/main.png')] bg-cover bg-center bg-no-repeat relative flex flex-col justify-between items-center overflow-hidden">
+    <div class="relative w-full h-[100dvh] flex flex-col justify-between items-center overflow-hidden">
         
-        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/70 pointer-events-none"></div>
+        <!-- Ambient Blur Fill (Guarantees zero black bars on any aspect ratio) -->
+        <div class="absolute inset-0 bg-[url('models/main.png')] bg-cover bg-center filter blur-3xl scale-110 opacity-35 pointer-events-none"></div>
 
-        <div class="absolute inset-0 paper-grain pointer-events-none mix-blend-overlay opacity-50"></div>
+        <!-- Full Crisp Artwork Stage (100% of the scene is always fully visible) -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="relative w-full h-full max-w-[calc(100dvh*1.5)] max-h-[100dvh] aspect-[3/2] pointer-events-auto">
+                <img src="models/main.png" alt="Bonfire Scene" class="w-full h-full object-contain pointer-events-none select-none" />
 
-        <!-- Invisible Diet Coke click hotspot directly over the baked can in main.png -->
-        <div id="hiddenDietCoke" class="absolute z-20 cursor-pointer"
-            style="left: 4.1%; top: 58.8%; width: clamp(24px, 3vw, 42px); height: clamp(32px, 4.5vh, 50px);"
-            title="A cold drink resting on the stand">
+                <!-- Pixel-locked Hotspot directly on the Diet Coke can on the stand -->
+                <div id="hiddenDietCoke" class="absolute cursor-pointer z-20"
+                    style="left: 4.8%; top: 55.6%; width: 2.2%; height: 4.5%; min-width: 24px; min-height: 36px;"
+                    title="A cold drink resting on the stand">
+                </div>
+            </div>
         </div>
+
+        <!-- Atmospheric Vignette & Paper Grain -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none"></div>
+        <div class="absolute inset-0 paper-grain pointer-events-none mix-blend-overlay opacity-40"></div>
 
         <!-- Top Navigation Header -->
         <header class="w-full z-40 flex flex-col sm:flex-row items-center justify-between gap-2.5 px-3 sm:px-6 pt-3 sm:pt-6 max-w-7xl">
@@ -194,11 +204,11 @@
         </div>
 
         <!-- Center Hero Title -->
-        <div class="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto my-auto py-2 sm:py-6 select-none">
-            <h1 class="vintage-font text-5xl sm:text-7xl md:text-8xl lg:text-[140px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-1 leading-none mb-[-12px] sm:mb-[-22px] md:mb-[-40px]">
+        <div class="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto my-auto py-2 sm:py-6 select-none pointer-events-none">
+            <h1 class="vintage-font text-4xl sm:text-6xl md:text-8xl lg:text-[130px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-1 leading-none mb-[-10px] sm:mb-[-18px] md:mb-[-35px]">
                 बोनफायर
             </h1>
-            <h1 class="vintage-font text-5xl sm:text-7xl md:text-8xl lg:text-[140px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-2 leading-none mb-2 sm:mb-3 md:mb-5">
+            <h1 class="vintage-font text-4xl sm:text-6xl md:text-8xl lg:text-[130px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-2 leading-none mb-2 sm:mb-3 md:mb-5">
                 नाइट्स
             </h1>
             <div class="subtitle-font text-xs sm:text-base md:text-xl tracking-[0.18em] sm:tracking-[0.2em] text-[#EAD8B1] opacity-95 animate-subtitle font-bold uppercase drop-shadow-lg">
