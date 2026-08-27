@@ -59,19 +59,33 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const query = (req.query && (req.query.q || req.query.query)) || '';
-  if (!query.trim()) {
+  const rawQuery = (req.query && (req.query.q || req.query.query)) || '';
+  if (!rawQuery.trim()) {
     return res.status(400).json({ error: 'Query parameter "q" is required' });
   }
 
   try {
-    const searchUrl = 'https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&includeMetaTags=1&p=1&n=8&q=' + encodeURIComponent(query);
-    const apiRes = await fetch(searchUrl, {
+    const cleanQ = rawQuery.replace(/\b(19\d\d|20\d\d)\b/g, '').replace(/[^\w\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+    let searchUrl = 'https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&includeMetaTags=1&p=1&n=8&q=' + encodeURIComponent(cleanQ || rawQuery);
+    let apiRes = await fetch(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
     });
-    const data = await apiRes.json();
+    let data = await apiRes.json();
+    let results = data.results || [];
 
-    const results = data.results || [];
+    // If no results, retry with first 3 words of query
+    if (!results.length) {
+      const shortQ = cleanQ.split(' ').slice(0, 3).join(' ');
+      if (shortQ && shortQ !== cleanQ) {
+        searchUrl = 'https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&includeMetaTags=1&p=1&n=8&q=' + encodeURIComponent(shortQ);
+        apiRes = await fetch(searchUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        });
+        data = await apiRes.json();
+        results = data.results || [];
+      }
+    }
+
     if (!results.length) {
       return res.status(200).json({ results: [] });
     }

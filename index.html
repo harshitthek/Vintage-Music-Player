@@ -503,8 +503,10 @@
         }
 
         async function fetchFullSongs(query) {
-            const q = (query || '').trim();
-            if (!q) return [];
+            const rawQ = (query || '').trim();
+            if (!rawQ) return [];
+            const cleanQ = rawQ.replace(/\b(19\d\d|20\d\d)\b/g, '').replace(/[^\w\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+            const q = cleanQ || rawQ;
 
             // 1. Primary: Vercel Serverless Function (/api/search?q=...)
             try {
@@ -528,67 +530,28 @@
                 }
             } catch (_) {}
 
-            // 2. Secondary: Direct browser-to-JioSaavn client resolution
+            // 2. High-speed Fallback: iTunes Audio
             try {
-                const searchUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&includeMetaTags=1&p=1&n=6&q=${encodeURIComponent(q)}`;
-                const res = await fetch(searchUrl);
-                const data = await res.json();
-                const rawResults = data.results || [];
-                if (rawResults.length > 0) {
-                    const resolved = await Promise.all(rawResults.slice(0, 4).map(async (song) => {
-                        if (!song.encrypted_media_url) return null;
-                        try {
-                            const authUrl = `https://www.jiosaavn.com/api.php?__call=song.generateAuthToken&_format=json&_marker=0&cc=in&bitrate=160&url=${encodeURIComponent(song.encrypted_media_url)}`;
-                            const aRes = await fetch(authUrl);
-                            const aData = await aRes.json();
-                            if (!aData || !aData.auth_url) return null;
-                            const title = (song.song || song.title || 'Unknown').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
-                            const artist = (song.singers || (song.more_info && song.more_info.singers) || 'Unknown').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
-                            const year = parseInt(song.year || (song.more_info && song.more_info.year) || '2000', 10);
-                            let decade = '20s';
-                            if (year >= 1950 && year < 1960) decade = '50s';
-                            else if (year >= 1960 && year < 1970) decade = '60s';
-                            else if (year >= 1970 && year < 1980) decade = '70s';
-                            else if (year >= 1980 && year < 1990) decade = '80s';
-                            else if (year >= 1990 && year < 2000) decade = '90s';
-                            return {
-                                id: song.id || 'saavn-' + Date.now(),
-                                title,
-                                artist,
-                                decade,
-                                artwork: (song.image || '').replace('150x150', '500x500'),
-                                previewUrl: aData.auth_url,
-                                duration: parseInt(song.duration || '0', 10),
-                                isFullSong: true,
-                                liked: likedPreviews.some(lp => lp.id === song.id)
-                            };
-                        } catch (_) { return null; }
-                    }));
-                    const valid = resolved.filter(Boolean);
-                    if (valid.length > 0) return valid;
-                }
-            } catch (_) {}
-
-            // 3. Fallback: iTunes Audio
-            try {
-                const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&country=IN&limit=6`;
+                const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q + ' hindi')}&media=music&country=IN&limit=6`;
                 const res = await fetch(url);
                 const data = await res.json();
                 const tracks = (data.results || []).filter(t => t.previewUrl);
-                return tracks.map(t => ({
-                    id: 'itunes-' + t.trackId,
-                    title: t.trackName,
-                    artist: t.artistName,
-                    decade: guessDecade(t.releaseDate),
-                    artwork: t.artworkUrl100,
-                    previewUrl: t.previewUrl,
-                    duration: 30,
-                    isFullSong: false,
-                    liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
-                }));
-            } catch (_) {
-                return [];
-            }
+                if (tracks.length > 0) {
+                    return tracks.map(t => ({
+                        id: 'itunes-' + t.trackId,
+                        title: t.trackName,
+                        artist: t.artistName,
+                        decade: guessDecade(t.releaseDate),
+                        artwork: t.artworkUrl100,
+                        previewUrl: t.previewUrl,
+                        duration: 30,
+                        isFullSong: false,
+                        liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
+                    }));
+                }
+            } catch (_) {}
+
+            return [];
         }
 
         let diceHistory = [];     
@@ -599,9 +562,13 @@
             prevBtn.disabled = true;
             nextBtn.disabled = true;
 
+            const decadeLabel = DECADE_LABELS[activeDecadeFilter] || 'All Decades';
+            songTitleEl.textContent = '🎲 Tuning in…';
+            artistNameEl.textContent = `Finding a classic from ${decadeLabel}`;
+
             try {
                 const db = await loadSongsDb();
-                if (!db) throw new Error('Could not load songs.json');
+                if (!db) throw new Error('Could not load songs database');
 
                 let pool = [];
                 if (activeDecadeFilter === 'all') {
@@ -609,20 +576,28 @@
                 } else {
                     pool = db[activeDecadeFilter] || [];
                 }
-                if (pool.length === 0) throw new Error('No songs for this decade');
+                if (pool.length === 0) throw new Error('No songs found for this decade');
 
-                let song = null;
-                for (let attempt = 0; attempt < 5; attempt++) {
-                    const entry = pickRandom(pool);
-                    const results = await fetchFullSongs(entry.query);
-                    if (results && results.length > 0) {
-                        song = pickRandom(results);
-                        if (activeDecadeFilter !== 'all') song.decade = activeDecadeFilter;
-                        break;
-                    }
+                // Pick 3 random candidates and resolve in parallel for sub-second response
+                const candidates = [pickRandom(pool), pickRandom(pool), pickRandom(pool)];
+                const resultsArray = await Promise.all(candidates.map(c => fetchFullSongs(c.query)));
+                const songPool = resultsArray.flat().filter(Boolean);
+
+                if (!songPool.length) {
+                    // Try one more general fallback query for the decade
+                    const fallbackQuery = activeDecadeFilter === '50s' ? 'awaara hoon' :
+                                         activeDecadeFilter === '60s' ? 'lag ja gale' :
+                                         activeDecadeFilter === '70s' ? 'chura liya hai' :
+                                         activeDecadeFilter === '80s' ? 'dil cheez kya' :
+                                         activeDecadeFilter === '90s' ? 'pehla nasha' : 'kesariya';
+                    const fallbackSongs = await fetchFullSongs(fallbackQuery);
+                    if (fallbackSongs.length) songPool.push(...fallbackSongs);
                 }
 
-                if (!song) throw new Error('Could not stream song — try again');
+                if (!songPool.length) throw new Error('Could not tune in — tap Dice again');
+
+                const song = pickRandom(songPool);
+                if (activeDecadeFilter !== 'all') song.decade = activeDecadeFilter;
 
                 diceHistory = diceHistory.slice(0, diceHistoryPos + 1);
                 diceHistory.push(song);
@@ -633,7 +608,7 @@
 
             } catch (err) {
                 songTitleEl.textContent = '🎲 ' + (err.message || 'Could not pick a song');
-                artistNameEl.textContent = 'Try again or change decade filter';
+                artistNameEl.textContent = 'Tap the dice again or switch decade';
             } finally {
                 playerPlaylistBtn.classList.remove('animate-spin');
                 playerPlaylistBtn.disabled = false;
