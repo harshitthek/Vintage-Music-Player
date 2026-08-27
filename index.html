@@ -7,7 +7,6 @@
     <title>Bonfire Radio - बोनफायर नाइट्स</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Special+Elite&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         .vintage-font {
@@ -40,8 +39,8 @@
             100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes playerEntrance {
-            0% { opacity: 0; transform: translate(-50%, 40px) scale(0.95); }
-            100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            0% { opacity: 0; transform: translateY(30px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes spinSlow {
             from { transform: rotate(0deg); }
@@ -76,11 +75,19 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
-<body class="m-0 p-0 bg-neutral-950 text-neutral-100 overflow-hidden select-none ui-font h-screen">
+<body class="m-0 p-0 bg-neutral-950 text-neutral-100 overflow-hidden select-none ui-font h-[100dvh] w-screen">
 
-    <div class="h-full w-full bg-[url('models/main.png')] bg-cover bg-center bg-no-repeat relative flex flex-col items-center justify-start pt-12 md:pt-16 px-4">
+    <div class="h-[100dvh] w-full bg-[url('models/main.png')] bg-cover bg-center bg-no-repeat relative flex flex-col justify-between items-center overflow-hidden">
         
         <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/70 pointer-events-none"></div>
 
@@ -88,35 +95,53 @@
 
         <!-- Invisible Diet Coke click hotspot directly over the baked can in main.png -->
         <div id="hiddenDietCoke" class="absolute z-20 cursor-pointer"
-            style="left: 4.8%; top: 55.6%; width: 2.2vw; height: 4.5vh; min-width: 22px; min-height: 35px;"
+            style="left: 4.1%; top: 58.8%; width: clamp(24px, 3vw, 42px); height: clamp(32px, 4.5vh, 50px);"
             title="A cold drink resting on the stand">
         </div>
 
-        <div class="absolute top-6 left-6 z-40 flex items-center gap-3">
-            <button id="searchSongBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Add local Hindi mp3s and tag their decade">
-                <svg class="w-4 h-4 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-</svg>
-                <span class="font-medium tracking-wide">Add Songs</span>
-            </button>
-            <button id="myLikesBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Show my liked songs">
-                <svg class="w-4 h-4 text-pink-300 group-hover:text-pink-200 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
-                </svg>
-                <span class="font-medium tracking-wide">My Likes</span>
-            </button>
-            <button id="discoverBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Search & play a 30-sec preview instantly">
-                <svg class="w-4 h-4 text-amber-200 group-hover:text-amber-100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-2v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-2c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zM9 10l12-2"></path>
-                </svg>
-                <span class="font-medium tracking-wide">Play Preview</span>
-            </button>
-        </div>
+        <!-- Top Navigation Header -->
+        <header class="w-full z-40 flex flex-col sm:flex-row items-center justify-between gap-2.5 px-3 sm:px-6 pt-3 sm:pt-6 max-w-7xl">
+            
+            <!-- Left Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start overflow-x-auto no-scrollbar py-0.5">
+                <button id="searchSongBtn" class="mac-glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer flex-shrink-0" title="Add local Hindi mp3s and tag their decade">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/80 group-hover:text-white transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span class="font-medium tracking-wide">Add Songs</span>
+                </button>
+                <button id="myLikesBtn" class="mac-glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer flex-shrink-0" title="Show my liked songs">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-300 group-hover:text-pink-200 transition-colors flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
+                    </svg>
+                    <span class="font-medium tracking-wide">My Likes</span>
+                </button>
+                <button id="discoverBtn" class="mac-glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer flex-shrink-0" title="Search & play a 30-sec preview instantly">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-200 group-hover:text-amber-100 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-2v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-2c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zM9 10l12-2"></path>
+                    </svg>
+                    <span class="font-medium tracking-wide">Play Preview</span>
+                </button>
+            </div>
 
-        <div id="discoverPanel" class="hidden absolute top-24 left-6 z-40 mac-glass rounded-2xl w-[320px] p-3 flex-col" style="max-height:70vh;">
+            <!-- Right Decade Filter Chips -->
+            <div id="decadeFilterBar" class="flex items-center gap-1 sm:gap-1.5 justify-start sm:justify-end w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5 max-w-full">
+                <button data-decade="all" class="decade-chip active-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/90 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">All</button>
+                <button data-decade="50s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">50's</button>
+                <button data-decade="60s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">60's</button>
+                <button data-decade="70s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">70's</button>
+                <button data-decade="80s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">80's</button>
+                <button data-decade="90s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">90's</button>
+                <button data-decade="20s" class="decade-chip mac-glass px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all flex-shrink-0">2020's</button>
+            </div>
+
+        </header>
+
+        <!-- Discover Panel (Modal / Dropdown) -->
+        <div id="discoverPanel" class="hidden fixed sm:absolute inset-x-3 top-24 sm:inset-auto sm:top-20 sm:left-6 z-50 mac-glass rounded-2xl w-auto sm:w-[320px] p-3 flex-col shadow-2xl" style="max-height: calc(100dvh - 180px);">
             <div class="flex items-center justify-between mb-2 px-1 flex-shrink-0">
                 <h3 class="text-xs font-bold text-white/90 tracking-wide uppercase">Search &amp; Play</h3>
-                <button id="closeDiscoverPanel" class="text-white/60 hover:text-white text-sm leading-none">✕</button>
+                <button id="closeDiscoverPanel" class="text-white/60 hover:text-white text-base leading-none p-1">✕</button>
             </div>
 
             <div class="px-1 mb-2 flex-shrink-0" id="discoverSearchWrap">
@@ -131,32 +156,24 @@
                 </div>
             </div>
 
-            <ul id="discoverSuggestions" class="hidden flex-col gap-0.5 overflow-y-auto px-1 flex-shrink-0" style="max-height:260px;"></ul>
+            <ul id="discoverSuggestions" class="hidden flex-col gap-0.5 overflow-y-auto px-1 flex-shrink-0" style="max-height:220px;"></ul>
 
             <div id="discoverStatus" class="hidden flex-shrink-0 text-white/50 text-xs text-center py-2 px-1"></div>
 
             <ul id="discoverResults" class="flex flex-col gap-0.5 overflow-y-auto flex-1 px-1"></ul>
         </div>
 
-        <div id="decadeFilterBar" class="absolute top-6 right-6 z-40 flex flex-wrap gap-2 justify-end max-w-[260px] md:max-w-none">
-            <button data-decade="all" class="decade-chip active-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/90 hover:bg-white/20 active:scale-95 transition-all">All</button>
-            <button data-decade="50s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">50's</button>
-            <button data-decade="60s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">60's</button>
-            <button data-decade="70s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">70's</button>
-            <button data-decade="80s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">80's</button>
-            <button data-decade="90s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">90's</button>
-            <button data-decade="20s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">2020's</button>
-        </div>
-
-        <div id="playlistPanel" class="hidden absolute top-24 right-6 z-40 mac-glass rounded-2xl w-[280px] max-h-[55vh] overflow-y-auto p-3">
+        <!-- Playlist / Favorites Panel -->
+        <div id="playlistPanel" class="hidden fixed sm:absolute inset-x-3 top-24 sm:inset-auto sm:top-20 sm:right-6 z-50 mac-glass rounded-2xl w-auto sm:w-[280px] max-h-[60vh] overflow-y-auto p-3 shadow-2xl">
             <div class="flex items-center justify-between mb-2 px-1">
                 <h3 id="playlistPanelTitle" class="text-xs font-bold text-white/90 tracking-wide uppercase">Playlist</h3>
-                <button id="closePlaylistPanel" class="text-white/60 hover:text-white text-sm">✕</button>
+                <button id="closePlaylistPanel" class="text-white/60 hover:text-white text-base leading-none p-1">✕</button>
             </div>
             <ul id="playlistList" class="flex flex-col gap-1"></ul>
             <p id="playlistEmptyMsg" class="text-white/50 text-xs text-center py-4 hidden">No songs yet.</p>
         </div>
 
+        <!-- Tag Modal -->
         <div id="tagModalOverlay" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
             <div class="mac-glass rounded-2xl p-5 w-full max-w-sm">
                 <h3 class="text-sm font-bold text-white mb-1">Tag these songs</h3>
@@ -176,94 +193,94 @@
             </div>
         </div>
 
-        <div class="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto">
-        
-            <h1 class="vintage-font text-6xl sm:text-8xl md:text-[145px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-1 leading-none mb-[-25px] md:mb-[-45px]">
+        <!-- Center Hero Title -->
+        <div class="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto my-auto py-2 sm:py-6 select-none">
+            <h1 class="vintage-font text-5xl sm:text-7xl md:text-8xl lg:text-[140px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-1 leading-none mb-[-12px] sm:mb-[-22px] md:mb-[-40px]">
                 बोनफायर
             </h1>
-            <h1 class="vintage-font text-6xl sm:text-8xl md:text-[145px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-2 leading-none mb-3 md:mb-5">
+            <h1 class="vintage-font text-5xl sm:text-7xl md:text-8xl lg:text-[140px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-2 leading-none mb-2 sm:mb-3 md:mb-5">
                 नाइट्स
             </h1>
-            <div class="subtitle-font text-sm sm:text-base md:text-xl tracking-[0.2em] text-[#EAD8B1] opacity-95 animate-subtitle font-bold uppercase drop-shadow-lg">
+            <div class="subtitle-font text-xs sm:text-base md:text-xl tracking-[0.18em] sm:tracking-[0.2em] text-[#EAD8B1] opacity-95 animate-subtitle font-bold uppercase drop-shadow-lg">
                 — 50’s TO 20’s —
             </div>
-
         </div>
 
-        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 opacity-0 animate-player flex items-center gap-3 w-auto">
+        <!-- Bottom Audio Player Container -->
+        <div class="w-full max-w-2xl z-30 pb-3 sm:pb-6 md:pb-8 px-2 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-3 opacity-0 animate-player">
 
-            <div class="w-[95vw] sm:w-[520px] md:w-[580px] h-[88px]">
+            <div class="flex-1 min-w-0 h-[74px] sm:h-[82px] md:h-[88px]">
 
-            <audio id="audioElement"></audio>
+                <audio id="audioElement"></audio>
 
-            <div class="mac-glass rounded-3xl h-full px-5 flex items-center justify-between gap-4 text-neutral-100 relative overflow-hidden">
-             
-                <div class="absolute inset-0 bg-[#b34721] mix-blend-multiply opacity-10 pointer-events-none"></div>
-                <div class="absolute inset-0 paper-grain opacity-30 pointer-events-none"></div>
-
-                <div class="relative flex-shrink-0 cursor-pointer group shadow-lg rounded-full" id="uploadTrigger" title="Click to add local music files">
-                    <div class="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/20 transition-transform group-hover:scale-105">
-                        <img id="albumArt" src="models/main.png" alt="Artwork" class="w-full h-full object-cover rotating-art paused-art" />
-                    </div>
-                    <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
-                        <svg class="w-5 h-5 text-white/80 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        <span class="text-[9px] text-white font-medium">MUSIC</span>
-                    </div>
-                </div>
-
-                <input type="file" id="audioFileInput" accept="audio/*" multiple class="hidden">
-
-                <div class="flex-grow min-w-0 flex flex-col justify-center gap-2 py-1">
-                    <div class="truncate text-center">
-                        <h2 id="songTitle" class="text-sm md:text-base font-semibold text-white truncate drop-shadow-sm">Waiting for input...</h2>
-                        <p id="artistName" class="text-xs text-white/70 font-medium truncate">Add music to start</p>
-                    </div>
-
-                    <div class="flex items-center gap-2 w-full">
-                        <span id="currentTime" class="text-[11px] font-mono text-white/60 w-10 text-right">00:00</span>
-                      
-                        <div class="flex-grow bg-white/20 h-1.5 rounded-full overflow-hidden cursor-pointer group relative" id="progressBarContainer">
-                        
-                            <div id="progressBar" class="bg-white h-full w-0 rounded-full relative transition-all duration-150 ease-linear shadow-md">
-                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"></div>
-                            </div>
-                        </div>
-                        <span id="duration" class="text-[11px] font-mono text-white/60 w-10 text-left">00:00</span>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
-
-                    <button id="likeBtn" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Like this song" disabled>
-                        <svg id="likeIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
-                        </svg>
-                    </button>
-
-                    <button id="prevBtn" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Previous Song">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                    </button>
-
-                    <button id="playPauseBtn" class="w-14 h-14 rounded-full bg-white text-[#b34721] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60" title="Play / Pause">
-                        <svg id="playIcon" class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
-                        <svg id="pauseIcon" class="w-5 h-5 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    </button>
-
-                    <button id="nextBtn" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Next Song">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                    </button>
-
-                </div>
-
-            </div>
-            </div>
-
-            <button id="playerPlaylistBtn" class="mac-glass flex-shrink-0 h-[88px] w-[88px] rounded-3xl flex items-center justify-center text-white/80 hover:bg-white/20 active:scale-95 transition-all shadow-lg" title="Discover Random Song (Click or press Enter)">
-                
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <div class="mac-glass rounded-2xl sm:rounded-3xl h-full px-2.5 sm:px-4 md:px-5 flex items-center justify-between gap-2 sm:gap-3 md:gap-4 text-neutral-100 relative overflow-hidden">
                  
+                    <div class="absolute inset-0 bg-[#b34721] mix-blend-multiply opacity-10 pointer-events-none"></div>
+                    <div class="absolute inset-0 paper-grain opacity-30 pointer-events-none"></div>
+
+                    <!-- Album Art Vinyl -->
+                    <div class="relative flex-shrink-0 cursor-pointer group shadow-lg rounded-full" id="uploadTrigger" title="Click to add local music files">
+                        <div class="w-11 h-11 sm:w-13 sm:h-13 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/20 transition-transform group-hover:scale-105">
+                            <img id="albumArt" src="models/main.png" alt="Artwork" class="w-full h-full object-cover rotating-art paused-art" />
+                        </div>
+                        <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white/80 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            <span class="text-[8px] sm:text-[9px] text-white font-medium">MUSIC</span>
+                        </div>
+                    </div>
+
+                    <input type="file" id="audioFileInput" accept="audio/*" multiple class="hidden">
+
+                    <!-- Track Info & Scrubber -->
+                    <div class="flex-grow min-w-0 flex flex-col justify-center gap-1 sm:gap-2 py-0.5">
+                        <div class="truncate text-center">
+                            <h2 id="songTitle" class="text-xs sm:text-sm md:text-base font-semibold text-white truncate drop-shadow-sm">Waiting for input...</h2>
+                            <p id="artistName" class="text-[10px] sm:text-xs text-white/70 font-medium truncate">Add music to start</p>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 sm:gap-2 w-full">
+                            <span id="currentTime" class="text-[9px] sm:text-[11px] font-mono text-white/60 w-7 sm:w-10 text-right">00:00</span>
+                          
+                            <div class="flex-grow bg-white/20 h-1.5 rounded-full overflow-hidden cursor-pointer group relative" id="progressBarContainer">
+                                <div id="progressBar" class="bg-white h-full w-0 rounded-full relative transition-all duration-150 ease-linear shadow-md">
+                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"></div>
+                                </div>
+                            </div>
+                            <span id="duration" class="text-[9px] sm:text-[11px] font-mono text-white/60 w-7 sm:w-10 text-left">00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Transport Controls -->
+                    <div class="flex items-center gap-0.5 sm:gap-1 md:gap-2 flex-shrink-0">
+
+                        <button id="likeBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Like this song" disabled>
+                            <svg id="likeIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
+                            </svg>
+                        </button>
+
+                        <button id="prevBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Previous Song">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                        </button>
+
+                        <button id="playPauseBtn" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white text-[#b34721] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 flex-shrink-0" title="Play / Pause">
+                            <svg id="playIcon" class="w-5 h-5 sm:w-6 sm:h-6 fill-current" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
+                            <svg id="pauseIcon" class="w-4 h-4 sm:w-5 sm:h-5 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+
+                        <button id="nextBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Next Song">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Dice Button -->
+            <button id="playerPlaylistBtn" class="mac-glass flex-shrink-0 h-[74px] w-[74px] sm:h-[82px] sm:w-[82px] md:h-[88px] md:w-[88px] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white/80 hover:bg-white/20 active:scale-95 transition-all shadow-lg" title="Discover Random Song (Click or press Enter)">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
-                  
                     <circle cx="8"  cy="8"  r="1.1" fill="currentColor" stroke="none"/>
                     <circle cx="16" cy="8"  r="1.1" fill="currentColor" stroke="none"/>
                     <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>
