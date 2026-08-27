@@ -82,6 +82,20 @@
             backface-visibility: hidden;
         }
 
+        @keyframes diceRolling {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(0.85); }
+            50% { transform: rotate(180deg) scale(1.15); }
+            75% { transform: rotate(270deg) scale(0.85); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .dice-rolling {
+            animation: diceRolling 0.55s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+            color: #fde047 !important;
+            filter: drop-shadow(0 0 10px rgba(253, 224, 71, 0.8)) !important;
+        }
+
         .smooth-scroll {
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
@@ -297,8 +311,8 @@
             </div>
 
             <!-- Dice Button -->
-            <button id="playerPlaylistBtn" class="mac-glass flex-shrink-0 h-[74px] w-[74px] sm:h-[82px] sm:w-[82px] md:h-[88px] md:w-[88px] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white/80 hover:bg-white/20 active:scale-95 transition-all shadow-lg" title="Discover Random Song (Click or press Enter)">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <button id="playerPlaylistBtn" class="mac-glass cursor-pointer flex-shrink-0 h-[74px] w-[74px] sm:h-[82px] sm:w-[82px] md:h-[88px] md:w-[88px] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 active:scale-95 transition-all shadow-lg group" title="Discover Random Song (Click or press Enter)">
+                <svg id="diceIcon" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 transition-transform group-hover:rotate-12 duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
                     <circle cx="8"  cy="8"  r="1.1" fill="currentColor" stroke="none"/>
                     <circle cx="16" cy="8"  r="1.1" fill="currentColor" stroke="none"/>
@@ -554,16 +568,18 @@
             return [];
         }
 
+        const diceIcon = document.getElementById('diceIcon');
+
         let diceHistory = [];     
         let diceHistoryPos = -1;  
         async function playRandomDiceSong() {
-            playerPlaylistBtn.classList.add('animate-spin');
+            if (diceIcon) diceIcon.classList.add('dice-rolling');
             playerPlaylistBtn.disabled = true;
             prevBtn.disabled = true;
             nextBtn.disabled = true;
 
             const decadeLabel = DECADE_LABELS[activeDecadeFilter] || 'All Decades';
-            songTitleEl.textContent = '🎲 Tuning in…';
+            songTitleEl.textContent = '🎲 Rolling the dice…';
             artistNameEl.textContent = `Finding a classic from ${decadeLabel}`;
 
             try {
@@ -579,12 +595,11 @@
                 if (pool.length === 0) throw new Error('No songs found for this decade');
 
                 // Pick 3 random candidates and resolve in parallel for sub-second response
-                const candidates = [pickRandom(pool), pickRandom(pool), pickRandom(pool)];
-                const resultsArray = await Promise.all(candidates.map(c => fetchFullSongs(c.query)));
+                const shuffled = pool.sort(() => 0.5 - Math.random()).slice(0, 3);
+                const resultsArray = await Promise.all(shuffled.map(c => fetchFullSongs(c.query)));
                 const songPool = resultsArray.flat().filter(Boolean);
 
                 if (!songPool.length) {
-                    // Try one more general fallback query for the decade
                     const fallbackQuery = activeDecadeFilter === '50s' ? 'awaara hoon' :
                                          activeDecadeFilter === '60s' ? 'lag ja gale' :
                                          activeDecadeFilter === '70s' ? 'chura liya hai' :
@@ -610,7 +625,7 @@
                 songTitleEl.textContent = '🎲 ' + (err.message || 'Could not pick a song');
                 artistNameEl.textContent = 'Tap the dice again or switch decade';
             } finally {
-                playerPlaylistBtn.classList.remove('animate-spin');
+                if (diceIcon) diceIcon.classList.remove('dice-rolling');
                 playerPlaylistBtn.disabled = false;
                 prevBtn.disabled = false;
                 nextBtn.disabled = false;
