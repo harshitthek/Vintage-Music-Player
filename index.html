@@ -136,11 +136,11 @@
                     </svg>
                     <span class="font-medium tracking-wide">My Likes</span>
                 </button>
-                <button id="discoverBtn" class="mac-glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer flex-shrink-0" title="Search & play a 30-sec preview instantly">
+                <button id="discoverBtn" class="mac-glass px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer flex-shrink-0" title="Search & stream full-length songs">
                     <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-200 group-hover:text-amber-100 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-2v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-2c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zM9 10l12-2"></path>
                     </svg>
-                    <span class="font-medium tracking-wide">Play Preview</span>
+                    <span class="font-medium tracking-wide">Search & Play</span>
                 </button>
             </div>
 
@@ -503,6 +503,95 @@
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
+        async function fetchFullSongs(query) {
+            const q = (query || '').trim();
+            if (!q) return [];
+
+            // 1. Primary: Vercel Serverless Function (/api/search?q=...)
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.results && data.results.length > 0) {
+                        return data.results.map(s => ({
+                            id: s.id,
+                            title: s.title,
+                            artist: s.artist,
+                            album: s.album,
+                            decade: s.decade || '20s',
+                            artwork: s.artwork,
+                            previewUrl: s.streamUrl,
+                            duration: s.duration,
+                            isFullSong: true,
+                            liked: likedPreviews.some(lp => lp.id === s.id)
+                        }));
+                    }
+                }
+            } catch (_) {}
+
+            // 2. Secondary: Direct browser-to-JioSaavn client resolution
+            try {
+                const searchUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&includeMetaTags=1&p=1&n=6&q=${encodeURIComponent(q)}`;
+                const res = await fetch(searchUrl);
+                const data = await res.json();
+                const rawResults = data.results || [];
+                if (rawResults.length > 0) {
+                    const resolved = await Promise.all(rawResults.slice(0, 4).map(async (song) => {
+                        if (!song.encrypted_media_url) return null;
+                        try {
+                            const authUrl = `https://www.jiosaavn.com/api.php?__call=song.generateAuthToken&_format=json&_marker=0&cc=in&bitrate=160&url=${encodeURIComponent(song.encrypted_media_url)}`;
+                            const aRes = await fetch(authUrl);
+                            const aData = await aRes.json();
+                            if (!aData || !aData.auth_url) return null;
+                            const title = (song.song || song.title || 'Unknown').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+                            const artist = (song.singers || (song.more_info && song.more_info.singers) || 'Unknown').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+                            const year = parseInt(song.year || (song.more_info && song.more_info.year) || '2000', 10);
+                            let decade = '20s';
+                            if (year >= 1950 && year < 1960) decade = '50s';
+                            else if (year >= 1960 && year < 1970) decade = '60s';
+                            else if (year >= 1970 && year < 1980) decade = '70s';
+                            else if (year >= 1980 && year < 1990) decade = '80s';
+                            else if (year >= 1990 && year < 2000) decade = '90s';
+                            return {
+                                id: song.id || 'saavn-' + Date.now(),
+                                title,
+                                artist,
+                                decade,
+                                artwork: (song.image || '').replace('150x150', '500x500'),
+                                previewUrl: aData.auth_url,
+                                duration: parseInt(song.duration || '0', 10),
+                                isFullSong: true,
+                                liked: likedPreviews.some(lp => lp.id === song.id)
+                            };
+                        } catch (_) { return null; }
+                    }));
+                    const valid = resolved.filter(Boolean);
+                    if (valid.length > 0) return valid;
+                }
+            } catch (_) {}
+
+            // 3. Fallback: iTunes Audio
+            try {
+                const url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&country=IN&limit=6`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const tracks = (data.results || []).filter(t => t.previewUrl);
+                return tracks.map(t => ({
+                    id: 'itunes-' + t.trackId,
+                    title: t.trackName,
+                    artist: t.artistName,
+                    decade: guessDecade(t.releaseDate),
+                    artwork: t.artworkUrl100,
+                    previewUrl: t.previewUrl,
+                    duration: 30,
+                    isFullSong: false,
+                    liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
+                }));
+            } catch (_) {
+                return [];
+            }
+        }
+
         let diceHistory = [];     
         let diceHistoryPos = -1;  
         async function playRandomDiceSong() {
@@ -524,29 +613,17 @@
                 if (pool.length === 0) throw new Error('No songs for this decade');
 
                 let song = null;
-                for (let attempt = 0; attempt < 4; attempt++) {
+                for (let attempt = 0; attempt < 5; attempt++) {
                     const entry = pickRandom(pool);
-                    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(entry.query)}&media=music&country=IN&limit=10`;
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    const tracks = (data.results || []).filter(t => t.previewUrl);
-                    if (tracks.length === 0) continue;
-
-                    const track = pickRandom(tracks);
-                    const decade = (activeDecadeFilter === 'all') ? guessDecade(track.releaseDate) : activeDecadeFilter;
-                    song = {
-                        id: 'itunes-' + track.trackId,
-                        title: track.trackName,
-                        artist: track.artistName,
-                        decade,
-                        artwork: track.artworkUrl100,
-                        previewUrl: track.previewUrl,
-                        liked: likedPreviews.some(s => s.id === 'itunes-' + track.trackId)
-                    };
-                    break;
+                    const results = await fetchFullSongs(entry.query);
+                    if (results && results.length > 0) {
+                        song = pickRandom(results);
+                        if (activeDecadeFilter !== 'all') song.decade = activeDecadeFilter;
+                        break;
+                    }
                 }
 
-                if (!song) throw new Error('No preview found — try again');
+                if (!song) throw new Error('Could not stream song — try again');
 
                 diceHistory = diceHistory.slice(0, diceHistoryPos + 1);
                 diceHistory.push(song);
@@ -598,7 +675,7 @@
                     const isCurrent = currentSong && currentSong.id === song.id;
                     const li = document.createElement('li');
                     li.className = 'flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all ' + (isCurrent ? 'bg-white/15' : '');
-                    const badge = entry.kind === 'preview' ? ' · 30s' : '';
+                    const badge = entry.kind === 'preview' ? ' · Full Song' : '';
                     li.innerHTML = `
                         <div class="min-w-0 flex-1">
                             <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
@@ -712,52 +789,31 @@
             if (q.length < 2) { hideSuggestions(); return; }
 
             try {
-                let url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&country=IN&limit=8`;
-                let res = await fetch(url);
-                let data = await res.json();
+                const songs = await fetchFullSongs(q);
                 if (myToken !== suggestToken) return;
-
-                let tracks = (data.results || []).filter(t => t.previewUrl);
-                if (!tracks.length) {
-                    url = `https://itunes.apple.com/search?term=${encodeURIComponent(q + ' hindi')}&media=music&country=IN&limit=8`;
-                    res = await fetch(url);
-                    data = await res.json();
-                    if (myToken !== suggestToken) return;
-                    tracks = (data.results || []).filter(t => t.previewUrl);
-                }
-                if (!tracks.length) { hideSuggestions(); return; }
+                if (!songs.length) { hideSuggestions(); return; }
 
                 discoverSuggestions.innerHTML = '';
                 suggestionItems = [];
                 suggestionFocus = -1;
 
-                tracks.forEach((t, i) => {
+                songs.slice(0, 6).forEach((song) => {
                     const li = document.createElement('li');
                     li.className = 'flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/10 transition-colors';
                     li.innerHTML = `
-                        <img src="${t.artworkUrl60 || t.artworkUrl100}" class="w-8 h-8 rounded-md flex-shrink-0 object-cover"/>
+                        <img src="${song.artwork || 'models/main.png'}" class="w-8 h-8 rounded-md flex-shrink-0 object-cover"/>
                         <div class="min-w-0 flex-1">
-                            <p class="text-[11px] font-semibold text-white truncate">${highlightMatch(t.trackName, q)}</p>
-                            <p class="text-[10px] text-white/55 truncate">${highlightMatch(t.artistName, q)}</p>
+                            <p class="text-[11px] font-semibold text-white truncate">${highlightMatch(song.title, q)}</p>
+                            <p class="text-[10px] text-white/55 truncate">${highlightMatch(song.artist, q)}</p>
                         </div>
                         <svg class="w-3 h-3 text-white/30 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
                     `;
                     li.addEventListener('mousedown', (e) => {
                         e.preventDefault();
-                        const decade = guessDecade(t.releaseDate);
-                        const song = {
-                            id: 'itunes-' + t.trackId,
-                            title: t.trackName,
-                            artist: t.artistName,
-                            decade,
-                            artwork: t.artworkUrl100,
-                            previewUrl: t.previewUrl,
-                            liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
-                        };
-                        discoverInput.value = t.trackName + ' — ' + t.artistName;
+                        discoverInput.value = song.title + ' — ' + song.artist;
                         discoverClear.classList.remove('hidden');
                         hideSuggestions();
-                        runDiscoverSearch(t.trackName + ' ' + t.artistName, song);
+                        playPreviewSong(song, 0);
                     });
                     discoverSuggestions.appendChild(li);
                     suggestionItems.push(li);
@@ -811,7 +867,6 @@
 
         let discoverSearchToken = 0;
         let discoverDebounceTimer = null;
-        let suggestDebounceTimer = null;
 
         discoverInput.addEventListener('input', () => {
             const val = discoverInput.value;
@@ -841,43 +896,20 @@
             }
 
             discoverStatus.classList.remove('hidden');
-            discoverStatus.innerHTML = `<span class="inline-flex items-center gap-1"><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Searching…</span>`;
+            discoverStatus.innerHTML = `<span class="inline-flex items-center gap-1"><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Searching full tracks…</span>`;
 
             try {
-                let url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&country=IN&limit=20`;
-                let res = await fetch(url);
-                let data = await res.json();
+                const songList = await fetchFullSongs(q);
                 if (myToken !== discoverSearchToken) return;
 
-                let tracks = (data.results || []).filter(t => t.previewUrl);
-                if (!tracks.length) {
-                    url = `https://itunes.apple.com/search?term=${encodeURIComponent(q + ' hindi')}&media=music&country=IN&limit=20`;
-                    res = await fetch(url);
-                    data = await res.json();
-                    if (myToken !== discoverSearchToken) return;
-                    tracks = (data.results || []).filter(t => t.previewUrl);
-                }
                 discoverResults.innerHTML = '';
 
-                if (!tracks.length) {
+                if (!songList.length) {
                     discoverStatus.classList.remove('hidden');
-                    discoverStatus.textContent = 'No results found. Try a different name.';
+                    discoverStatus.textContent = 'No results found. Try a different song name.';
                     return;
                 }
                 discoverStatus.classList.add('hidden');
-
-                const songList = tracks.map(t => {
-                    const decade = guessDecade(t.releaseDate);
-                    return {
-                        id: 'itunes-' + t.trackId,
-                        title: t.trackName,
-                        artist: t.artistName,
-                        decade,
-                        artwork: t.artworkUrl100,
-                        previewUrl: t.previewUrl,
-                        liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
-                    };
-                });
                 currentPreviewList = songList;
 
                 if (autoplaySong) {
@@ -885,26 +917,25 @@
                     playPreviewSong(autoplaySong, idx >= 0 ? idx : 0);
                 }
 
-                const queryWords = q.toLowerCase().split(/\s+/);
                 songList.forEach((song, idx) => {
                     const isCurrent = currentSong && currentSong.id === song.id;
                     const li = document.createElement('li');
                     li.className = `flex items-center gap-2 px-2 py-2 rounded-xl cursor-pointer transition-all ${isCurrent ? 'bg-white/20' : 'hover:bg-white/10'}`;
+                    const durationStr = song.duration ? formatTime(song.duration) : 'Full';
                     li.innerHTML = `
                         <div class="relative flex-shrink-0">
-                            <img src="${song.artwork}" class="w-10 h-10 rounded-lg object-cover"/>
+                            <img src="${song.artwork || 'models/main.png'}" class="w-10 h-10 rounded-lg object-cover"/>
                             <div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 hover:opacity-100 transition-opacity">
                                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
                             </div>
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
-                            <p class="text-[10px] text-white/60 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}</p>
+                            <p class="text-[10px] text-white/60 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade] || 'Hindi'}</p>
                         </div>
-                        <span class="text-[9px] font-medium text-white/40 bg-white/10 rounded px-1.5 py-0.5 flex-shrink-0">30s</span>
+                        <span class="text-[9px] font-medium text-amber-200 bg-amber-950/50 border border-amber-500/20 rounded px-1.5 py-0.5 flex-shrink-0">${durationStr}</span>
                     `;
                     li.addEventListener('click', () => {
-                      
                         discoverResults.querySelectorAll('li').forEach(el => el.classList.remove('bg-white/20'));
                         li.classList.add('bg-white/20');
                         playPreviewSong(song, idx);
@@ -960,9 +991,10 @@
 
         function loadSong(song, src, isPreview) {
             songTitleEl.textContent = song.title;
-            artistNameEl.textContent = song.artist + ' · ' + DECADE_LABELS[song.decade] + (isPreview ? ' · 30s preview' : '');
+            const badge = (song.isFullSong !== false) ? ' · Full Song' : ' · 30s preview';
+            artistNameEl.textContent = song.artist + ' · ' + (DECADE_LABELS[song.decade] || song.decade) + badge;
             audioElement.src = src;
-            if (isPreview && song.artwork) {
+            if (song.artwork) {
                 albumArt.src = song.artwork;
             }
             albumArt.classList.add('paused-art');
@@ -994,12 +1026,13 @@
 
         const hiddenDietCoke = document.getElementById('hiddenDietCoke');
         if (hiddenDietCoke) {
-            const triggerEasterEgg = (e) => {
+            const triggerEasterEgg = async (e) => {
                 if (e) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
 
+                // Default full-track stream fallback for instant touch playback
                 let song = {
                     id: 'bubblegum-princess',
                     title: 'Bubblegum Princess',
@@ -1007,26 +1040,32 @@
                     decade: '20s',
                     artwork: 'models/diet_coke.png',
                     previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/2f/f6/49/2ff6494e-ebad-85a7-2b76-d0925cf4f6a1/mzaf_3783394280351668694.plus.aac.p.m4a',
+                    duration: 95,
+                    isFullSong: true,
                     liked: likedPreviews.some(s => s.id === 'bubblegum-princess')
                 };
 
-                // Trigger playback synchronously within the user touch/click gesture loop (required by iOS/Android)
+                // Trigger playback synchronously within the user gesture loop
                 currentPreviewList = [song];
                 playPreviewSong(song, 0);
 
-                // Fetch fresh artwork/metadata in background without interrupting playback
-                fetch('https://itunes.apple.com/search?term=Princess+Bubblegum+ilyTOMMY&media=music&limit=3')
-                    .then(r => r.json())
-                    .then(data => {
-                        const track = (data.results || []).find(t => t.previewUrl);
-                        if (track && songTitleEl.textContent === 'Bubblegum Princess') {
-                            song.artist = track.artistName + ' · Special Edition';
-                            if (track.artworkUrl100) song.artwork = track.artworkUrl100;
-                            artistNameEl.textContent = song.artist + ' · 2020\'s · 30s preview';
-                            if (song.artwork) albumArt.src = song.artwork;
+                // Fetch full-length stream URL from JioSaavn in background to upgrade to full song
+                try {
+                    const fullTracks = await fetchFullSongs('Princess Bubblegum ilyTOMMY');
+                    if (fullTracks && fullTracks.length > 0) {
+                        const full = fullTracks[0];
+                        song.previewUrl = full.previewUrl;
+                        song.title = 'Bubblegum Princess';
+                        song.artist = 'ilyTOMMY · Full Song';
+                        song.duration = full.duration || 95;
+                        if (full.artwork) song.artwork = full.artwork;
+                        if (currentSong && currentSong.id === 'bubblegum-princess') {
+                            audioElement.src = full.previewUrl;
+                            audioElement.play().catch(() => {});
+                            artistNameEl.textContent = song.artist + " · 2020's · Full Song";
                         }
-                    })
-                    .catch(() => {});
+                    }
+                } catch (_) {}
             };
 
             hiddenDietCoke.addEventListener('click', triggerEasterEgg);
