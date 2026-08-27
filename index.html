@@ -468,6 +468,7 @@
                 });
                 applyFilter(activeDecadeFilter);
                 renderPlaylistPanel();
+                preloadNextDiceSong(activeDecadeFilter);
             });
         });
 
@@ -571,7 +572,33 @@
         const diceIcon = document.getElementById('diceIcon');
 
         let diceHistory = [];     
-        let diceHistoryPos = -1;  
+        let diceHistoryPos = -1;
+        let preloadedDiceSong = null;
+        let isPreloading = false;
+
+        async function preloadNextDiceSong(decade) {
+            if (isPreloading) return;
+            isPreloading = true;
+            try {
+                const db = await loadSongsDb();
+                if (!db) return;
+                const targetDecade = decade || activeDecadeFilter;
+                let pool = (targetDecade === 'all') ? Object.values(db).flat() : (db[targetDecade] || []);
+                if (!pool.length) return;
+                const entry = pickRandom(pool);
+                const songs = await fetchFullSongs(entry.query);
+                if (songs && songs.length > 0) {
+                    const song = pickRandom(songs);
+                    if (targetDecade !== 'all') song.decade = targetDecade;
+                    preloadedDiceSong = song;
+                }
+            } catch (_) {}
+            finally { isPreloading = false; }
+        }
+
+        // Start preloading initial song in background
+        setTimeout(() => preloadNextDiceSong(), 800);
+
         async function playRandomDiceSong() {
             if (diceIcon) diceIcon.classList.add('dice-rolling');
             playerPlaylistBtn.disabled = true;
@@ -579,6 +606,28 @@
             nextBtn.disabled = true;
 
             const decadeLabel = DECADE_LABELS[activeDecadeFilter] || 'All Decades';
+
+            // 1. Instant Playback from Preloaded Cache (0ms latency)
+            if (preloadedDiceSong && (activeDecadeFilter === 'all' || preloadedDiceSong.decade === activeDecadeFilter)) {
+                const song = preloadedDiceSong;
+                preloadedDiceSong = null;
+                diceHistory = diceHistory.slice(0, diceHistoryPos + 1);
+                diceHistory.push(song);
+                diceHistoryPos = diceHistory.length - 1;
+                currentPreviewList = [song];
+                playPreviewSong(song, 0);
+
+                setTimeout(() => {
+                    if (diceIcon) diceIcon.classList.remove('dice-rolling');
+                    playerPlaylistBtn.disabled = false;
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                    preloadNextDiceSong();
+                }, 400);
+                return;
+            }
+
+            // 2. Direct fast fetch of 1 candidate
             songTitleEl.textContent = '🎲 Rolling the dice…';
             artistNameEl.textContent = `Finding a classic from ${decadeLabel}`;
 
@@ -586,32 +635,24 @@
                 const db = await loadSongsDb();
                 if (!db) throw new Error('Could not load songs database');
 
-                let pool = [];
-                if (activeDecadeFilter === 'all') {
-                    Object.values(db).forEach(arr => pool.push(...arr));
-                } else {
-                    pool = db[activeDecadeFilter] || [];
-                }
-                if (pool.length === 0) throw new Error('No songs found for this decade');
+                let pool = (activeDecadeFilter === 'all') ? Object.values(db).flat() : (db[activeDecadeFilter] || []);
+                if (!pool.length) throw new Error('No songs found for this decade');
 
-                // Pick 3 random candidates and resolve in parallel for sub-second response
-                const shuffled = pool.sort(() => 0.5 - Math.random()).slice(0, 3);
-                const resultsArray = await Promise.all(shuffled.map(c => fetchFullSongs(c.query)));
-                const songPool = resultsArray.flat().filter(Boolean);
+                const entry = pickRandom(pool);
+                let songs = await fetchFullSongs(entry.query);
 
-                if (!songPool.length) {
+                if (!songs || !songs.length) {
                     const fallbackQuery = activeDecadeFilter === '50s' ? 'awaara hoon' :
                                          activeDecadeFilter === '60s' ? 'lag ja gale' :
                                          activeDecadeFilter === '70s' ? 'chura liya hai' :
                                          activeDecadeFilter === '80s' ? 'dil cheez kya' :
                                          activeDecadeFilter === '90s' ? 'pehla nasha' : 'kesariya';
-                    const fallbackSongs = await fetchFullSongs(fallbackQuery);
-                    if (fallbackSongs.length) songPool.push(...fallbackSongs);
+                    songs = await fetchFullSongs(fallbackQuery);
                 }
 
-                if (!songPool.length) throw new Error('Could not tune in — tap Dice again');
+                if (!songs || !songs.length) throw new Error('Could not tune in — tap Dice again');
 
-                const song = pickRandom(songPool);
+                const song = pickRandom(songs);
                 if (activeDecadeFilter !== 'all') song.decade = activeDecadeFilter;
 
                 diceHistory = diceHistory.slice(0, diceHistoryPos + 1);
@@ -620,6 +661,9 @@
 
                 currentPreviewList = [song];
                 playPreviewSong(song, 0);
+
+                // Queue next track in background
+                preloadNextDiceSong();
 
             } catch (err) {
                 songTitleEl.textContent = '🎲 ' + (err.message || 'Could not pick a song');

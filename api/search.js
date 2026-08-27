@@ -90,7 +90,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ results: [] });
     }
 
-    const resolvedPromises = results.slice(0, 5).map(resolveFullSong);
+    const resolvedPromises = results.slice(0, 3).map(resolveFullSong);
     const resolvedSongs = (await Promise.all(resolvedPromises)).filter(Boolean);
 
     res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
