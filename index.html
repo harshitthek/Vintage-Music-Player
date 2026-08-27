@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=100&id=LTLZTUNlFQPy&format=png&color=000000">
+    <title>Bonfire Radio - बोनफायर नाइट्स</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Special+Elite&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .vintage-font {
+            font-family: 'Rozha One', serif;
+        }
+        .subtitle-font {
+            font-family: 'Special Elite', monospace, serif;
+        }
+        .ui-font {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .paper-grain {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+        .retro-shadow {
+            text-shadow: 3px 3px 0px rgba(15, 10, 5, 0.85), 
+                         1px 1px 0px rgba(0, 0, 0, 0.9);
+        }
+        
+        @keyframes slideUpFade1 {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUpFade2 {
+            0% { opacity: 0; transform: translateY(35px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInSlow {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes playerEntrance {
+            0% { opacity: 0; transform: translate(-50%, 40px) scale(0.95); }
+            100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+        }
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-title-1 {
+            animation: slideUpFade1 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-title-2 {
+            opacity: 0;
+            animation: slideUpFade2 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+        }
+        .animate-subtitle {
+            opacity: 0;
+            animation: fadeInSlow 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+        }
+        .animate-player {
+            animation: playerEntrance 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+        }
+        .rotating-art {
+            animation: spinSlow 12s linear infinite;
+        }
+        .paused-art {
+            animation-play-state: paused;
+        }
+
+        .mac-glass {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+    </style>
+</head>
+<body class="m-0 p-0 bg-neutral-950 text-neutral-100 overflow-hidden select-none ui-font h-screen">
+
+    <div class="h-full w-full bg-[url('models/main.png')] bg-cover bg-center bg-no-repeat relative flex flex-col items-center justify-start pt-12 md:pt-16 px-4">
+        
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/70 pointer-events-none"></div>
+
+        <div class="absolute inset-0 paper-grain pointer-events-none mix-blend-overlay opacity-50"></div>
+
+        <div class="absolute top-6 left-6 z-40 flex items-center gap-3">
+            <button id="searchSongBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Add local Hindi mp3s and tag their decade">
+                <svg class="w-4 h-4 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+</svg>
+                <span class="font-medium tracking-wide">Add Songs</span>
+            </button>
+            <button id="myLikesBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Show my liked songs">
+                <svg class="w-4 h-4 text-pink-300 group-hover:text-pink-200 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
+                </svg>
+                <span class="font-medium tracking-wide">My Likes</span>
+            </button>
+            <button id="discoverBtn" class="mac-glass px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-white/90 hover:bg-white/20 active:scale-95 transition-all shadow-lg group cursor-pointer" title="Search & play a 30-sec preview instantly">
+                <svg class="w-4 h-4 text-amber-200 group-hover:text-amber-100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-2v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-2c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zM9 10l12-2"></path>
+                </svg>
+                <span class="font-medium tracking-wide">Play Preview</span>
+            </button>
+        </div>
+
+        <div id="discoverPanel" class="hidden absolute top-24 left-6 z-40 mac-glass rounded-2xl w-[320px] p-3 flex-col" style="max-height:70vh;">
+            <div class="flex items-center justify-between mb-2 px-1 flex-shrink-0">
+                <h3 class="text-xs font-bold text-white/90 tracking-wide uppercase">Search &amp; Play</h3>
+                <button id="closeDiscoverPanel" class="text-white/60 hover:text-white text-sm leading-none">✕</button>
+            </div>
+
+            <div class="px-1 mb-2 flex-shrink-0" id="discoverSearchWrap">
+                <div class="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-3 py-2 focus-within:border-white/50 transition-colors">
+                    <svg class="w-3.5 h-3.5 text-white/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input id="discoverInput" type="text" autocomplete="off" spellcheck="false"
+                        placeholder="Song, artist, movie…"
+                        class="flex-grow bg-transparent text-xs text-white outline-none placeholder-white/40 min-w-0" />
+                    <button id="discoverClear" class="hidden text-white/40 hover:text-white text-sm leading-none flex-shrink-0">✕</button>
+                </div>
+            </div>
+
+            <ul id="discoverSuggestions" class="hidden flex-col gap-0.5 overflow-y-auto px-1 flex-shrink-0" style="max-height:260px;"></ul>
+
+            <div id="discoverStatus" class="hidden flex-shrink-0 text-white/50 text-xs text-center py-2 px-1"></div>
+
+            <ul id="discoverResults" class="flex flex-col gap-0.5 overflow-y-auto flex-1 px-1"></ul>
+        </div>
+
+        <div id="decadeFilterBar" class="absolute top-6 right-6 z-40 flex flex-wrap gap-2 justify-end max-w-[260px] md:max-w-none">
+            <button data-decade="all" class="decade-chip active-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/90 hover:bg-white/20 active:scale-95 transition-all">All</button>
+            <button data-decade="50s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">50's</button>
+            <button data-decade="60s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">60's</button>
+            <button data-decade="70s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">70's</button>
+            <button data-decade="80s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">80's</button>
+            <button data-decade="90s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">90's</button>
+            <button data-decade="20s" class="decade-chip mac-glass px-3 py-1.5 rounded-full text-[11px] md:text-xs font-semibold text-white/70 hover:bg-white/20 active:scale-95 transition-all">2020's</button>
+        </div>
+
+        <div id="playlistPanel" class="hidden absolute top-24 right-6 z-40 mac-glass rounded-2xl w-[280px] max-h-[55vh] overflow-y-auto p-3">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <h3 id="playlistPanelTitle" class="text-xs font-bold text-white/90 tracking-wide uppercase">Playlist</h3>
+                <button id="closePlaylistPanel" class="text-white/60 hover:text-white text-sm">✕</button>
+            </div>
+            <ul id="playlistList" class="flex flex-col gap-1"></ul>
+            <p id="playlistEmptyMsg" class="text-white/50 text-xs text-center py-4 hidden">No songs yet.</p>
+        </div>
+
+        <div id="tagModalOverlay" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+            <div class="mac-glass rounded-2xl p-5 w-full max-w-sm">
+                <h3 class="text-sm font-bold text-white mb-1">Tag these songs</h3>
+                <p class="text-xs text-white/60 mb-3">Pick the decade for the file(s) you just added.</p>
+                <select id="tagDecadeSelect" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none">
+                    <option value="50s">50's</option>
+                    <option value="60s">60's</option>
+                    <option value="70s">70's</option>
+                    <option value="80s">80's</option>
+                    <option value="90s">90's</option>
+                    <option value="20s">2020's</option>
+                </select>
+                <div class="flex gap-2">
+                    <button id="tagConfirmBtn" class="flex-1 bg-white text-[#b34721] font-semibold text-sm rounded-lg py-2 hover:opacity-90 active:scale-95 transition-all">Add to Playlist</button>
+                    <button id="tagCancelBtn" class="px-4 bg-white/10 text-white text-sm rounded-lg py-2 hover:bg-white/20 active:scale-95 transition-all">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto">
+        
+            <h1 class="vintage-font text-6xl sm:text-8xl md:text-[145px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-1 leading-none mb-[-25px] md:mb-[-45px]">
+                बोनफायर
+            </h1>
+            <h1 class="vintage-font text-6xl sm:text-8xl md:text-[145px] tracking-tight text-[#FDF6E2] retro-shadow animate-title-2 leading-none mb-3 md:mb-5">
+                नाइट्स
+            </h1>
+            <div class="subtitle-font text-sm sm:text-base md:text-xl tracking-[0.2em] text-[#EAD8B1] opacity-95 animate-subtitle font-bold uppercase drop-shadow-lg">
+                — 50’s TO 20’s —
+            </div>
+
+        </div>
+
+        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 opacity-0 animate-player flex items-center gap-3 w-auto">
+
+            <div class="w-[95vw] sm:w-[520px] md:w-[580px] h-[88px]">
+
+            <audio id="audioElement"></audio>
+
+            <div class="mac-glass rounded-3xl h-full px-5 flex items-center justify-between gap-4 text-neutral-100 relative overflow-hidden">
+             
+                <div class="absolute inset-0 bg-[#b34721] mix-blend-multiply opacity-10 pointer-events-none"></div>
+                <div class="absolute inset-0 paper-grain opacity-30 pointer-events-none"></div>
+
+                <div class="relative flex-shrink-0 cursor-pointer group shadow-lg rounded-full" id="uploadTrigger" title="Click to add local music files">
+                    <div class="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/20 transition-transform group-hover:scale-105">
+                        <img id="albumArt" src="models/main.png" alt="Artwork" class="w-full h-full object-cover rotating-art paused-art" />
+                    </div>
+                    <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                        <svg class="w-5 h-5 text-white/80 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <span class="text-[9px] text-white font-medium">MUSIC</span>
+                    </div>
+                </div>
+
+                <input type="file" id="audioFileInput" accept="audio/*" multiple class="hidden">
+
+                <div class="flex-grow min-w-0 flex flex-col justify-center gap-2 py-1">
+                    <div class="truncate text-center">
+                        <h2 id="songTitle" class="text-sm md:text-base font-semibold text-white truncate drop-shadow-sm">Waiting for input...</h2>
+                        <p id="artistName" class="text-xs text-white/70 font-medium truncate">Add music to start</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full">
+                        <span id="currentTime" class="text-[11px] font-mono text-white/60 w-10 text-right">00:00</span>
+                      
+                        <div class="flex-grow bg-white/20 h-1.5 rounded-full overflow-hidden cursor-pointer group relative" id="progressBarContainer">
+                        
+                            <div id="progressBar" class="bg-white h-full w-0 rounded-full relative transition-all duration-150 ease-linear shadow-md">
+                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"></div>
+                            </div>
+                        </div>
+                        <span id="duration" class="text-[11px] font-mono text-white/60 w-10 text-left">00:00</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
+
+                    <button id="likeBtn" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Like this song" disabled>
+                        <svg id="likeIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
+                        </svg>
+                    </button>
+
+                    <button id="prevBtn" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Previous Song">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+
+                    <button id="playPauseBtn" class="w-14 h-14 rounded-full bg-white text-[#b34721] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60" title="Play / Pause">
+                        <svg id="playIcon" class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
+                        <svg id="pauseIcon" class="w-5 h-5 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+
+                    <button id="nextBtn" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Next Song">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+
+                </div>
+
+            </div>
+            </div>
+
+            <button id="playerPlaylistBtn" class="mac-glass flex-shrink-0 h-[88px] w-[88px] rounded-3xl flex items-center justify-center text-white/80 hover:bg-white/20 active:scale-95 transition-all shadow-lg" title="Discover Random Song (Click or press Enter)">
+                
+                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                 
+                    <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
+                  
+                    <circle cx="8"  cy="8"  r="1.1" fill="currentColor" stroke="none"/>
+                    <circle cx="16" cy="8"  r="1.1" fill="currentColor" stroke="none"/>
+                    <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+                    <circle cx="8"  cy="16" r="1.1" fill="currentColor" stroke="none"/>
+                    <circle cx="16" cy="16" r="1.1" fill="currentColor" stroke="none"/>
+                </svg>
+            </button>
+
+        </div>
+
+    </div>
+
+    <script>
+        const audioElement = document.getElementById('audioElement');
+        audioElement.preload = 'auto';
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const likeBtn = document.getElementById('likeBtn');
+        const likeIcon = document.getElementById('likeIcon');
+        const songTitleEl = document.getElementById('songTitle');
+        const artistNameEl = document.getElementById('artistName');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const albumArt = document.getElementById('albumArt');
+        const uploadTrigger = document.getElementById('uploadTrigger');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const searchSongBtn = document.getElementById('searchSongBtn');
+        const myLikesBtn = document.getElementById('myLikesBtn');
+        const decadeFilterBar = document.getElementById('decadeFilterBar');
+        const decadeChips = document.querySelectorAll('.decade-chip');
+        const playlistPanel = document.getElementById('playlistPanel');
+        const playlistPanelTitle = document.getElementById('playlistPanelTitle');
+        const playlistList = document.getElementById('playlistList');
+        const playlistEmptyMsg = document.getElementById('playlistEmptyMsg');
+        const closePlaylistPanel = document.getElementById('closePlaylistPanel');
+        const tagModalOverlay = document.getElementById('tagModalOverlay');
+        const tagDecadeSelect = document.getElementById('tagDecadeSelect');
+        const tagConfirmBtn = document.getElementById('tagConfirmBtn');
+        const tagCancelBtn = document.getElementById('tagCancelBtn');
+        const playerPlaylistBtn = document.getElementById('playerPlaylistBtn');
+        const discoverBtn = document.getElementById('discoverBtn');
+        const discoverPanel = document.getElementById('discoverPanel');
+        const closeDiscoverPanel = document.getElementById('closeDiscoverPanel');
+        const discoverInput = document.getElementById('discoverInput');
+        const discoverStatus = document.getElementById('discoverStatus');
+        const discoverResults = document.getElementById('discoverResults');
+
+        const DECADE_LABELS = { '50s': "50's", '60s': "60's", '70s': "70's", '80s': "80's", '90s': "90's", '20s': "2020's" };
+
+ 
+        let library = [];
+        let filteredView = []; 
+        let currentLibIndex = null; 
+        let isPlaying = false;
+        let activeDecadeFilter = 'all';
+        let pendingFiles = [];
+
+        const LIKES_KEY = 'bonfireRadioLikedSongIds';    
+        const LIKED_PREVIEWS_KEY = 'bonfireRadioLikedPreviews'; 
+
+        function loadLikedIds() {
+            try { return new Set(JSON.parse(localStorage.getItem(LIKES_KEY)) || []); }
+            catch (e) { return new Set(); }
+        }
+        function saveLikedIds(setObj) {
+            localStorage.setItem(LIKES_KEY, JSON.stringify(Array.from(setObj)));
+        }
+        let likedIds = loadLikedIds();
+
+        function loadLikedPreviews() {
+            try { return JSON.parse(localStorage.getItem(LIKED_PREVIEWS_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function saveLikedPreviews(arr) {
+            localStorage.setItem(LIKED_PREVIEWS_KEY, JSON.stringify(arr));
+        }
+        let likedPreviews = loadLikedPreviews(); 
+
+        function songId(name, decade) {
+            return decade + '::' + name;
+        }
+
+        function setInitialState() {
+            songTitleEl.textContent = "Waiting for input...";
+            artistNameEl.textContent = "Add music to start";
+            currentTimeEl.textContent = "00:00";
+            durationEl.textContent = "00:00";
+            progressBar.style.width = "0%";
+            playPauseBtn.disabled = true;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            likeBtn.disabled = true;
+        }
+        setInitialState();
+
+        uploadTrigger.addEventListener('click', () => audioFileInput.click());
+        searchSongBtn.addEventListener('click', () => audioFileInput.click());
+
+        audioFileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/'));
+            if (files.length === 0) return;
+            pendingFiles = files;
+            tagModalOverlay.classList.remove('hidden');
+            audioFileInput.value = '';
+        });
+
+        tagCancelBtn.addEventListener('click', () => {
+            pendingFiles = [];
+            tagModalOverlay.classList.add('hidden');
+        });
+
+        tagConfirmBtn.addEventListener('click', () => {
+            const decade = tagDecadeSelect.value;
+            const startIndex = library.length;
+            pendingFiles.forEach(file => {
+                let displayName = file.name.replace(/\.[^/.]+$/, "");
+                let artist = "Unknown Artist";
+                let title = displayName;
+                if (displayName.includes(' - ')) {
+                    let parts = displayName.split(' - ');
+                    artist = parts[0].trim();
+                    title = parts[1].trim();
+                }
+                const id = songId(file.name, decade);
+                library.push({
+                    id, name: file.name, artist, title, decade,
+                    file, liked: likedIds.has(id)
+                });
+            });
+            pendingFiles = [];
+            tagModalOverlay.classList.add('hidden');
+            applyFilter(activeDecadeFilter);
+            if (currentLibIndex === null && library.length > startIndex) {
+                playFromLibrary(startIndex);
+            }
+            renderPlaylistPanel();
+        });
+
+        decadeChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                activeDecadeFilter = chip.dataset.decade;
+                decadeChips.forEach(c => {
+                    c.classList.toggle('active-chip', c === chip);
+                    c.classList.toggle('text-white/90', c === chip);
+                    c.classList.toggle('text-white/70', c !== chip);
+                    c.style.background = c === chip ? 'rgba(255,255,255,0.28)' : '';
+                });
+                applyFilter(activeDecadeFilter);
+                renderPlaylistPanel();
+            });
+        });
+
+        function applyFilter(decade) {
+            if (decade === 'all') {
+                filteredView = library.map((_, i) => i);
+            } else {
+                filteredView = library.reduce((acc, song, i) => {
+                    if (song.decade === decade) acc.push(i);
+                    return acc;
+                }, []);
+            }
+        }
+        applyFilter('all');
+
+        myLikesBtn.addEventListener('click', () => {
+            showLikesPanel();
+        });
+        closePlaylistPanel.addEventListener('click', () => playlistPanel.classList.add('hidden'));
+
+        const FALLBACK_SONGS = {
+            "50s": [{"query":"awaara hoon mukesh"},{"query":"mera joota hai japani mukesh"},{"query":"pyar hua iqrar hua shree 420"},{"query":"aaja re pardesi lata mangeshkar"},{"query":"chaudhvin ka chand ho rafi"},{"query":"yeh raat bheegi bheegi lata manna dey"}],
+            "60s": [{"query":"lag jaa gale lata mangeshkar"},{"query":"roop tera mastana kishore kumar"},{"query":"mere sapno ki rani kishore kumar"},{"query":"ehsaan tera hoga mujh par rafi"},{"query":"ye sham mastani kishore kumar"},{"query":"baharon phool barsao rafi"}],
+            "70s": [{"query":"pal pal dil ke paas kishore kumar"},{"query":"kabhi kabhie mere dil mein mukesh"},{"query":"chura liya hai tumne jo dil ko"},{"query":"kheench teer kaman"},{"query":"dum maro dum asha bhosle"},{"query":"kya hua tera wada rafi"}],
+            "80s": [{"query":"dil cheez kya hai asha bhosle"},{"query":"yaad aa raha hai bappi lahiri"},{"query":"hawa hawai kavita krishnamurthy"},{"query":"gazab ka hai din udit narayan"},{"query":"papa kehte hain udit narayan"},{"query":"chehra kya dekhte ho"}],
+            "90s": [{"query":"tujhe dekha to kumar sanu"},{"query":"pehla nasha udit narayan"},{"query":"chaiyya chaiyya sukhwinder singh"},{"query":"sandese aate hain roop kumar"},{"query":"chura ke dil mera kumar sanu"},{"query":"dil to pagal hai lata udit"}],
+            "20s": [{"query":"tum hi ho arijit singh"},{"query":"kesariya arijit singh"},{"query":"kalank arijit singh"},{"query":"shayad arijit singh"},{"query":"channa mereya arijit singh"},{"query":"raataan lambiyan jubin nautiyal"}]
+        };
+
+        let songsDb = null; 
+
+        async function loadSongsDb() {
+            if (songsDb) return songsDb;
+            try {
+                const res = await fetch('songs.json');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                songsDb = await res.json();
+            } catch (e) {
+                console.warn('Using fallback songs catalog:', e);
+                songsDb = FALLBACK_SONGS;
+            }
+            return songsDb || FALLBACK_SONGS;
+        }
+
+        function pickRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        let diceHistory = [];     
+        let diceHistoryPos = -1;  
+        async function playRandomDiceSong() {
+            playerPlaylistBtn.classList.add('animate-spin');
+            playerPlaylistBtn.disabled = true;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+
+            try {
+                const db = await loadSongsDb();
+                if (!db) throw new Error('Could not load songs.json');
+
+                let pool = [];
+                if (activeDecadeFilter === 'all') {
+                    Object.values(db).forEach(arr => pool.push(...arr));
+                } else {
+                    pool = db[activeDecadeFilter] || [];
+                }
+                if (pool.length === 0) throw new Error('No songs for this decade');
+
+                let song = null;
+                for (let attempt = 0; attempt < 4; attempt++) {
+                    const entry = pickRandom(pool);
+                    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(entry.query)}&media=music&country=IN&limit=10`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    const tracks = (data.results || []).filter(t => t.previewUrl);
+                    if (tracks.length === 0) continue;
+
+                    const track = pickRandom(tracks);
+                    const decade = (activeDecadeFilter === 'all') ? guessDecade(track.releaseDate) : activeDecadeFilter;
+                    song = {
+                        id: 'itunes-' + track.trackId,
+                        title: track.trackName,
+                        artist: track.artistName,
+                        decade,
+                        artwork: track.artworkUrl100,
+                        previewUrl: track.previewUrl,
+                        liked: likedPreviews.some(s => s.id === 'itunes-' + track.trackId)
+                    };
+                    break;
+                }
+
+                if (!song) throw new Error('No preview found — try again');
+
+                diceHistory = diceHistory.slice(0, diceHistoryPos + 1);
+                diceHistory.push(song);
+                diceHistoryPos = diceHistory.length - 1;
+
+                currentPreviewList = [song];
+                playPreviewSong(song, 0);
+
+            } catch (err) {
+                songTitleEl.textContent = '🎲 ' + (err.message || 'Could not pick a song');
+                artistNameEl.textContent = 'Try again or change decade filter';
+            } finally {
+                playerPlaylistBtn.classList.remove('animate-spin');
+                playerPlaylistBtn.disabled = false;
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            }
+        }
+
+        playerPlaylistBtn.addEventListener('click', () => playRandomDiceSong());
+
+        function showLikesPanel() {
+            playlistPanelTitle.textContent = 'My Likes ♥';
+            playlistPanel.classList.remove('hidden');
+            playlistPanel.dataset.mode = 'likes';
+            renderPlaylistPanel();
+        }
+
+        function renderPlaylistPanel() {
+            if (playlistPanel.classList.contains('hidden')) return;
+            const mode = playlistPanel.dataset.mode || 'browse';
+            playlistList.innerHTML = '';
+
+            if (mode === 'likes') {
+                playlistPanelTitle.textContent = 'My Likes ♥';
+                const likedLocal = library.filter(s => s.liked);
+                const combined = [
+                    ...likedLocal.map(s => ({ kind: 'local', song: s })),
+                    ...likedPreviews.map(s => ({ kind: 'preview', song: s }))
+                ];
+                if (combined.length === 0) {
+                    playlistEmptyMsg.classList.remove('hidden');
+                    playlistEmptyMsg.textContent = "No liked songs yet. Tap the heart while a song plays.";
+                    return;
+                }
+                playlistEmptyMsg.classList.add('hidden');
+                combined.forEach(entry => {
+                    const song = entry.song;
+                    const isCurrent = currentSong && currentSong.id === song.id;
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all ' + (isCurrent ? 'bg-white/15' : '');
+                    const badge = entry.kind === 'preview' ? ' · 30s' : '';
+                    li.innerHTML = `
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                            <p class="text-[10px] text-white/60 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}${badge}</p>
+                        </div>
+                        <span class="like-dot text-pink-300 text-xs flex-shrink-0">♥</span>
+                    `;
+                    if (entry.kind === 'preview') {
+                        li.addEventListener('click', () => playPreviewSong(song));
+                    } else {
+                        const libIdx = library.indexOf(song);
+                        if (!song.file) {
+                            li.classList.add('opacity-50');
+                            li.title = 'Re-add this file this session to play it';
+                        }
+                        li.addEventListener('click', () => { if (song.file) playFromLibrary(libIdx); });
+                    }
+                    playlistList.appendChild(li);
+                });
+                return;
+            }
+
+            const indices = filteredView;
+            if (indices.length === 0) {
+                playlistEmptyMsg.classList.remove('hidden');
+                playlistEmptyMsg.textContent = "No songs in this decade yet. Use Add Songs.";
+                return;
+            }
+            playlistEmptyMsg.classList.add('hidden');
+            indices.forEach(i => {
+                const song = library[i];
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all ' + (i === currentLibIndex ? 'bg-white/15' : '');
+                li.innerHTML = `
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                        <p class="text-[10px] text-white/60 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}</p>
+                    </div>
+                    <span class="like-dot text-pink-300 text-xs flex-shrink-0">${song.liked ? '♥' : ''}</span>
+                `;
+                li.addEventListener('click', () => {
+                    if (!song.file) return;
+                    playFromLibrary(i);
+                });
+                if (!song.file) {
+                    li.classList.add('opacity-50');
+                    li.title = 'Re-add this file this session to play it';
+                }
+                playlistList.appendChild(li);
+            });
+        }
+
+        const discoverClear      = document.getElementById('discoverClear');
+        const discoverSuggestions = document.getElementById('discoverSuggestions');
+
+        discoverBtn.addEventListener('click', () => {
+            const isHidden = discoverPanel.classList.contains('hidden');
+            if (isHidden) {
+                discoverPanel.classList.remove('hidden');
+                discoverPanel.style.display = 'flex';
+                setTimeout(() => discoverInput.focus(), 50);
+            } else {
+                discoverPanel.classList.add('hidden');
+                discoverPanel.style.display = '';
+                hideSuggestions();
+            }
+        });
+        closeDiscoverPanel.addEventListener('click', () => {
+            discoverPanel.classList.add('hidden');
+            discoverPanel.style.display = '';
+            hideSuggestions();
+        });
+
+        function guessDecade(releaseDate) {
+            if (!releaseDate) return '20s';
+            const year = parseInt(releaseDate.slice(0, 4), 10);
+            if (year < 1960) return '50s';
+            if (year < 1970) return '60s';
+            if (year < 1980) return '70s';
+            if (year < 1990) return '80s';
+            if (year < 2000) return '90s';
+            return '20s';
+        }
+
+        function highlightMatch(text, query) {
+            if (!query) return escapeHtml(text);
+            const idx = text.toLowerCase().indexOf(query.toLowerCase());
+            if (idx === -1) return escapeHtml(text);
+            return escapeHtml(text.slice(0, idx))
+                + `<mark class="bg-white/25 text-white rounded px-0.5">${escapeHtml(text.slice(idx, idx + query.length))}</mark>`
+                + escapeHtml(text.slice(idx + query.length));
+        }
+
+        let suggestToken = 0;
+        let suggestTimer = null;
+        let suggestionItems = [];
+        let suggestionFocus = -1;
+
+        function hideSuggestions() {
+            discoverSuggestions.classList.add('hidden');
+            discoverSuggestions.classList.remove('flex');
+            discoverSuggestions.innerHTML = '';
+            suggestionItems = [];
+            suggestionFocus = -1;
+            discoverResults.style.display = '';
+            discoverStatus.style.display = '';
+        }
+
+        async function fetchSuggestions(q) {
+            const myToken = ++suggestToken;
+            if (q.length < 2) { hideSuggestions(); return; }
+
+            try {
+                let url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&country=IN&limit=8`;
+                let res = await fetch(url);
+                let data = await res.json();
+                if (myToken !== suggestToken) return;
+
+                let tracks = (data.results || []).filter(t => t.previewUrl);
+                if (!tracks.length) {
+                    url = `https://itunes.apple.com/search?term=${encodeURIComponent(q + ' hindi')}&media=music&country=IN&limit=8`;
+                    res = await fetch(url);
+                    data = await res.json();
+                    if (myToken !== suggestToken) return;
+                    tracks = (data.results || []).filter(t => t.previewUrl);
+                }
+                if (!tracks.length) { hideSuggestions(); return; }
+
+                discoverSuggestions.innerHTML = '';
+                suggestionItems = [];
+                suggestionFocus = -1;
+
+                tracks.forEach((t, i) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer hover:bg-white/10 transition-colors';
+                    li.innerHTML = `
+                        <img src="${t.artworkUrl60 || t.artworkUrl100}" class="w-8 h-8 rounded-md flex-shrink-0 object-cover"/>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[11px] font-semibold text-white truncate">${highlightMatch(t.trackName, q)}</p>
+                            <p class="text-[10px] text-white/55 truncate">${highlightMatch(t.artistName, q)}</p>
+                        </div>
+                        <svg class="w-3 h-3 text-white/30 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
+                    `;
+                    li.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        const decade = guessDecade(t.releaseDate);
+                        const song = {
+                            id: 'itunes-' + t.trackId,
+                            title: t.trackName,
+                            artist: t.artistName,
+                            decade,
+                            artwork: t.artworkUrl100,
+                            previewUrl: t.previewUrl,
+                            liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
+                        };
+                        discoverInput.value = t.trackName + ' — ' + t.artistName;
+                        discoverClear.classList.remove('hidden');
+                        hideSuggestions();
+                        runDiscoverSearch(t.trackName + ' ' + t.artistName, song);
+                    });
+                    discoverSuggestions.appendChild(li);
+                    suggestionItems.push(li);
+                });
+
+                discoverResults.style.display = 'none';
+                discoverStatus.style.display = 'none';
+                discoverSuggestions.classList.remove('hidden');
+                discoverSuggestions.classList.add('flex');
+
+            } catch (_) { hideSuggestions(); }
+        }
+
+        discoverInput.addEventListener('keydown', (e) => {
+            if (discoverSuggestions.classList.contains('hidden')) return;
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                suggestionFocus = Math.min(suggestionFocus + 1, suggestionItems.length - 1);
+                updateSuggestionFocus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                suggestionFocus = Math.max(suggestionFocus - 1, -1);
+                updateSuggestionFocus();
+            } else if (e.key === 'Enter' && suggestionFocus >= 0) {
+                e.preventDefault();
+                suggestionItems[suggestionFocus].dispatchEvent(new MouseEvent('mousedown'));
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
+            }
+        });
+
+        function updateSuggestionFocus() {
+            suggestionItems.forEach((li, i) => {
+                li.classList.toggle('bg-white/15', i === suggestionFocus);
+            });
+            if (suggestionFocus >= 0) suggestionItems[suggestionFocus].scrollIntoView({ block: 'nearest' });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!discoverPanel.contains(e.target)) hideSuggestions();
+        });
+
+        discoverClear.addEventListener('click', () => {
+            discoverInput.value = '';
+            discoverClear.classList.add('hidden');
+            discoverResults.innerHTML = '';
+            discoverStatus.classList.add('hidden');
+            hideSuggestions();
+            discoverInput.focus();
+        });
+
+        let discoverSearchToken = 0;
+        let discoverDebounceTimer = null;
+        let suggestDebounceTimer = null;
+
+        discoverInput.addEventListener('input', () => {
+            const val = discoverInput.value;
+            discoverClear.classList.toggle('hidden', !val);
+
+            clearTimeout(suggestTimer);
+            suggestTimer = setTimeout(() => fetchSuggestions(val.trim()), 200);
+
+            clearTimeout(discoverDebounceTimer);
+            discoverDebounceTimer = setTimeout(() => runDiscoverSearch(val), 450);
+        });
+
+        async function runDiscoverSearch(rawQuery, autoplaySong) {
+            const q = rawQuery.trim();
+            const myToken = ++discoverSearchToken;
+
+            if (!q) {
+                discoverResults.innerHTML = '';
+                discoverStatus.classList.add('hidden');
+                return;
+            }
+            if (q.length < 2) {
+                discoverStatus.classList.remove('hidden');
+                discoverStatus.textContent = 'Keep typing…';
+                discoverResults.innerHTML = '';
+                return;
+            }
+
+            discoverStatus.classList.remove('hidden');
+            discoverStatus.innerHTML = `<span class="inline-flex items-center gap-1"><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Searching…</span>`;
+
+            try {
+                let url = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&country=IN&limit=20`;
+                let res = await fetch(url);
+                let data = await res.json();
+                if (myToken !== discoverSearchToken) return;
+
+                let tracks = (data.results || []).filter(t => t.previewUrl);
+                if (!tracks.length) {
+                    url = `https://itunes.apple.com/search?term=${encodeURIComponent(q + ' hindi')}&media=music&country=IN&limit=20`;
+                    res = await fetch(url);
+                    data = await res.json();
+                    if (myToken !== discoverSearchToken) return;
+                    tracks = (data.results || []).filter(t => t.previewUrl);
+                }
+                discoverResults.innerHTML = '';
+
+                if (!tracks.length) {
+                    discoverStatus.classList.remove('hidden');
+                    discoverStatus.textContent = 'No results found. Try a different name.';
+                    return;
+                }
+                discoverStatus.classList.add('hidden');
+
+                const songList = tracks.map(t => {
+                    const decade = guessDecade(t.releaseDate);
+                    return {
+                        id: 'itunes-' + t.trackId,
+                        title: t.trackName,
+                        artist: t.artistName,
+                        decade,
+                        artwork: t.artworkUrl100,
+                        previewUrl: t.previewUrl,
+                        liked: likedPreviews.some(s => s.id === 'itunes-' + t.trackId)
+                    };
+                });
+                currentPreviewList = songList;
+
+                if (autoplaySong) {
+                    const idx = songList.findIndex(s => s.id === autoplaySong.id);
+                    playPreviewSong(autoplaySong, idx >= 0 ? idx : 0);
+                }
+
+                const queryWords = q.toLowerCase().split(/\s+/);
+                songList.forEach((song, idx) => {
+                    const isCurrent = currentSong && currentSong.id === song.id;
+                    const li = document.createElement('li');
+                    li.className = `flex items-center gap-2 px-2 py-2 rounded-xl cursor-pointer transition-all ${isCurrent ? 'bg-white/20' : 'hover:bg-white/10'}`;
+                    li.innerHTML = `
+                        <div class="relative flex-shrink-0">
+                            <img src="${song.artwork}" class="w-10 h-10 rounded-lg object-cover"/>
+                            <div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
+                            </div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                            <p class="text-[10px] text-white/60 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}</p>
+                        </div>
+                        <span class="text-[9px] font-medium text-white/40 bg-white/10 rounded px-1.5 py-0.5 flex-shrink-0">30s</span>
+                    `;
+                    li.addEventListener('click', () => {
+                      
+                        discoverResults.querySelectorAll('li').forEach(el => el.classList.remove('bg-white/20'));
+                        li.classList.add('bg-white/20');
+                        playPreviewSong(song, idx);
+                    });
+                    discoverResults.appendChild(li);
+                });
+
+            } catch (err) {
+                if (myToken !== discoverSearchToken) return;
+                discoverStatus.classList.remove('hidden');
+                discoverStatus.textContent = 'Search failed — check your connection.';
+            }
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        let currentSong = null;
+        let currentPreviewList = [];
+        let currentPreviewIndex = -1;
+
+        function playFromLibrary(libIndex) {
+            const song = library[libIndex];
+            if (!song || !song.file) return;
+            currentLibIndex = libIndex;
+            currentSong = song;
+            loadSong(song, URL.createObjectURL(song.file));
+            playSong();
+            playPauseBtn.disabled = false;
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            likeBtn.disabled = false;
+            updateLikeIcon();
+            renderPlaylistPanel();
+        }
+
+        function playPreviewSong(song, listIndex) {
+            currentLibIndex = null;
+            currentSong = song;
+            currentPreviewIndex = (typeof listIndex === 'number') ? listIndex : currentPreviewList.indexOf(song);
+            loadSong(song, song.previewUrl, true);
+            playSong();
+            playPauseBtn.disabled = false;
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            likeBtn.disabled = false;
+            updateLikeIcon();
+            renderPlaylistPanel();
+        }
+
+        function loadSong(song, src, isPreview) {
+            songTitleEl.textContent = song.title;
+            artistNameEl.textContent = song.artist + ' · ' + DECADE_LABELS[song.decade] + (isPreview ? ' · 30s preview' : '');
+            audioElement.src = src;
+            if (isPreview && song.artwork) {
+                albumArt.src = song.artwork;
+            }
+            albumArt.classList.add('paused-art');
+        }
+
+        function playSong() {
+            audioElement.play().then(() => {
+                isPlaying = true;
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                albumArt.classList.remove('paused-art');
+            }).catch(err => {
+                console.log("Playback prevented:", err);
+                isPlaying = false;
+            });
+        }
+
+        function pauseSong() {
+            audioElement.pause();
+            isPlaying = false;
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+            albumArt.classList.add('paused-art');
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) pauseSong(); else playSong();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target && e.target.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
+
+            switch (e.code) {
+                case 'Enter':
+                    e.preventDefault();
+                    playRandomDiceSong();
+                    break;
+                case 'Space':
+                    e.preventDefault();
+                    if (isPlaying) pauseSong(); else playSong();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    prevBtn.click();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    nextBtn.click();
+                    break;
+            }
+        });
+
+        function currentPositionInFilter() {
+            return filteredView.indexOf(currentLibIndex);
+        }
+
+        nextBtn.addEventListener('click', () => {
+           
+            if (currentLibIndex !== null) {
+                const pool = filteredView.length ? filteredView : library.map((_, i) => i);
+                if (pool.length <= 1) { if (pool.length === 1) playFromLibrary(pool[0]); return; }
+                let pos = pool.indexOf(currentLibIndex);
+                pos = (pos + 1 + pool.length) % pool.length;
+                playFromLibrary(pool[pos]);
+                return;
+            }
+            if (currentPreviewList.length > 1) {
+                const pos = (currentPreviewIndex + 1) % currentPreviewList.length;
+                playPreviewSong(currentPreviewList[pos], pos);
+                return;
+            }
+            if (diceHistoryPos < diceHistory.length - 1) {
+                diceHistoryPos++;
+                const song = diceHistory[diceHistoryPos];
+                currentPreviewList = [song];
+                playPreviewSong(song, 0);
+            } else {
+                playRandomDiceSong();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentLibIndex !== null) {
+                const pool = filteredView.length ? filteredView : library.map((_, i) => i);
+                if (pool.length <= 1) { if (pool.length === 1) playFromLibrary(pool[0]); return; }
+                let pos = pool.indexOf(currentLibIndex);
+                pos = (pos - 1 + pool.length) % pool.length;
+                playFromLibrary(pool[pos]);
+                return;
+            }
+            if (currentPreviewList.length > 1) {
+                const pos = (currentPreviewIndex - 1 + currentPreviewList.length) % currentPreviewList.length;
+                playPreviewSong(currentPreviewList[pos], pos);
+                return;
+            }
+            if (diceHistoryPos > 0) {
+                diceHistoryPos--;
+                const song = diceHistory[diceHistoryPos];
+                currentPreviewList = [song];
+                playPreviewSong(song, 0);
+            }
+        });
+
+        likeBtn.addEventListener('click', () => {
+            if (!currentSong) return;
+            if (currentSong.previewUrl) {
+                const idx = likedPreviews.findIndex(s => s.id === currentSong.id);
+                if (idx >= 0) {
+                    likedPreviews.splice(idx, 1);
+                    currentSong.liked = false;
+                } else {
+                    likedPreviews.push({ ...currentSong });
+                    currentSong.liked = true;
+                }
+                saveLikedPreviews(likedPreviews);
+            } else {
+                currentSong.liked = !currentSong.liked;
+                if (currentSong.liked) likedIds.add(currentSong.id); else likedIds.delete(currentSong.id);
+                saveLikedIds(likedIds);
+            }
+            updateLikeIcon();
+            renderPlaylistPanel();
+        });
+
+        function updateLikeIcon() {
+            if (!currentSong) {
+                likeIcon.setAttribute('fill', 'none');
+                return;
+            }
+            if (currentSong.liked) {
+                likeIcon.setAttribute('fill', 'currentColor');
+                likeBtn.classList.add('text-pink-400');
+                likeBtn.classList.remove('text-white/70');
+            } else {
+                likeIcon.setAttribute('fill', 'none');
+                likeBtn.classList.remove('text-pink-400');
+                likeBtn.classList.add('text-white/70');
+            }
+        }
+
+        audioElement.addEventListener('timeupdate', () => {
+            if (audioElement.duration) {
+                const current = audioElement.currentTime;
+                const duration = audioElement.duration;
+                const percent = (current / duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                currentTimeEl.textContent = formatTime(current);
+                durationEl.textContent = formatTime(duration);
+            }
+        });
+
+        audioElement.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audioElement.duration || 0);
+        });
+
+        audioElement.addEventListener('ended', () => {
+            if (currentLibIndex !== null) {
+                nextBtn.click();
+            } else if (currentPreviewList.length > 1) {
+                const nextIndex = currentPreviewIndex + 1;
+                if (nextIndex < currentPreviewList.length) {
+                    playPreviewSong(currentPreviewList[nextIndex], nextIndex);
+                } else {
+                    playRandomDiceSong();
+                }
+            } else {
+                playRandomDiceSong();
+            }
+        });
+
+        progressBarContainer.addEventListener('click', (e) => {
+            if (!audioElement.duration) return;
+            const rect = progressBarContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percentage = Math.min(Math.max(clickX / width, 0), 1);
+            audioElement.currentTime = percentage * audioElement.duration;
+        });
+
+        function formatTime(seconds) {
+            if (!isFinite(seconds)) return "00:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+    </script>
+    <style>
+        .active-chip { background: rgba(255,255,255,0.28) !important; }
+
+        #discoverPanel, #discoverResults, #discoverSuggestions, #playlistPanel, #playlistList {
+            scrollbar-width: none;     
+            -ms-overflow-style: none;    
+        }
+        #discoverPanel::-webkit-scrollbar,
+        #discoverResults::-webkit-scrollbar,
+        #discoverSuggestions::-webkit-scrollbar,
+        #playlistPanel::-webkit-scrollbar,
+        #playlistList::-webkit-scrollbar {
+            display: none;              
+        }
+    </style>
+</body>
+</html>

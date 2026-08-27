@@ -1,0 +1,20 @@
+{
+  "name": "vintage-music-player",
+  "version": "1.0.0",
+  "description": "Bonfire Radio - Vintage-style 50s to 2020s Music Player with 30s previews and discovery",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "music",
+    "player",
+    "vintage",
+    "audio",
+    "itunes-api",
+    "radio"
+  ],
+  "author": "harshitthek",
+  "license": "MIT"
+}
