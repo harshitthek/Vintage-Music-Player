@@ -229,6 +229,20 @@
         .bonfire-flicker {
             animation: bonfireFlicker 4s ease-in-out infinite;
         }
+
+        .active-chip { background: rgba(255,255,255,0.28) !important; }
+
+        #discoverPanel, #discoverResults, #discoverSuggestions, #playlistPanel, #playlistList {
+            scrollbar-width: none;     
+            -ms-overflow-style: none;    
+        }
+        #discoverPanel::-webkit-scrollbar,
+        #discoverResults::-webkit-scrollbar,
+        #discoverSuggestions::-webkit-scrollbar,
+        #playlistPanel::-webkit-scrollbar,
+        #playlistList::-webkit-scrollbar {
+            display: none;              
+        }
     </style>
 </head>
 <body class="m-0 p-0 bg-neutral-950 text-neutral-100 overflow-hidden select-none ui-font h-[100dvh] w-screen">
@@ -1562,20 +1576,5 @@
             return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
     </script>
-    <style>
-        .active-chip { background: rgba(255,255,255,0.28) !important; }
-
-        #discoverPanel, #discoverResults, #discoverSuggestions, #playlistPanel, #playlistList {
-            scrollbar-width: none;     
-            -ms-overflow-style: none;    
-        }
-        #discoverPanel::-webkit-scrollbar,
-        #discoverResults::-webkit-scrollbar,
-        #discoverSuggestions::-webkit-scrollbar,
-        #playlistPanel::-webkit-scrollbar,
-        #playlistList::-webkit-scrollbar {
-            display: none;              
-        }
-    </style>
 </body>
 </html>
