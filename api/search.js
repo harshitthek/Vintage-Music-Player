@@ -86,11 +86,8 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    if (!results.length) {
-      return res.status(200).json({ results: [] });
-    }
-
-    const resolvedPromises = results.slice(0, 3).map(resolveFullSong);
+    const limit = Math.min(Math.max(parseInt((req.query && req.query.limit) || '6', 10), 1), 10);
+    const resolvedPromises = results.slice(0, limit).map(resolveFullSong);
     const resolvedSongs = (await Promise.all(resolvedPromises)).filter(Boolean);
 
     res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');

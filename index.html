@@ -892,6 +892,44 @@
                 return;
             }
 
+            if (library.length === 0) {
+                const decadeTitle = (DECADE_LABELS[activeDecadeFilter] || 'Vintage') + ' Classics';
+                playlistPanelTitle.textContent = decadeTitle;
+                loadSongsDb().then(db => {
+                    if (playlistPanel.classList.contains('hidden') || playlistPanel.dataset.mode === 'likes') return;
+                    playlistList.innerHTML = '';
+                    const pool = (activeDecadeFilter === 'all') ? Object.values(db).flat() : (db[activeDecadeFilter] || []);
+                    if (!pool.length) {
+                        playlistEmptyMsg.classList.remove('hidden');
+                        playlistEmptyMsg.textContent = "No songs found for this decade.";
+                        return;
+                    }
+                    playlistEmptyMsg.classList.add('hidden');
+                    pool.slice(0, 50).forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all';
+                        const cleanTitle = item.query.replace(/\b(19\d\d|20\d\d)\b/g, '').replace(/[^\w\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+                        li.innerHTML = `
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-semibold text-white truncate capitalize">${escapeHtml(cleanTitle)}</p>
+                                <p class="text-[10px] text-white/60 truncate">${DECADE_LABELS[activeDecadeFilter] || 'Vintage Classic'}</p>
+                            </div>
+                            <svg class="w-3.5 h-3.5 text-amber-200/60 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
+                        `;
+                        li.addEventListener('click', async () => {
+                            li.classList.add('bg-white/20');
+                            const songs = await fetchFullSongs(item.query);
+                            if (songs && songs.length > 0) {
+                                currentPreviewList = songs;
+                                playPreviewSong(songs[0], 0);
+                            }
+                        });
+                        playlistList.appendChild(li);
+                    });
+                });
+                return;
+            }
+
             const indices = filteredView;
             if (indices.length === 0) {
                 playlistEmptyMsg.classList.remove('hidden');
@@ -1212,6 +1250,60 @@
                 albumArt.src = song.artwork;
             }
             albumArt.classList.add('paused-art');
+            updateMediaSession();
+        }
+
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator) || !currentSong) return;
+
+            const artUrl = currentSong.artwork || (window.location.origin + '/models/main.webp');
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: currentSong.title || 'Bonfire Track',
+                    artist: currentSong.artist || 'Bonfire Radio',
+                    album: currentSong.album || `Hindi Classics (${DECADE_LABELS[currentSong.decade] || 'Vintage'})`,
+                    artwork: [
+                        { src: artUrl, sizes: '512x512', type: 'image/webp' },
+                        { src: artUrl, sizes: '256x256', type: 'image/webp' },
+                        { src: artUrl, sizes: '128x128', type: 'image/webp' },
+                        { src: artUrl, sizes: '96x96', type: 'image/webp' }
+                    ]
+                });
+            } catch (_) {}
+
+            navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+            const actionHandlers = [
+                ['play', () => playSong()],
+                ['pause', () => pauseSong()],
+                ['previoustrack', () => prevBtn.click()],
+                ['nexttrack', () => nextBtn.click()],
+                ['seekto', (details) => {
+                    if (details.seekTime && audioElement.duration) {
+                        audioElement.currentTime = details.seekTime;
+                        updateScrubber(0, false);
+                    }
+                }]
+            ];
+
+            actionHandlers.forEach(([action, handler]) => {
+                try {
+                    navigator.mediaSession.setActionHandler(action, handler);
+                } catch (_) {}
+            });
+        }
+
+        function updateMediaPosition() {
+            if (!('mediaSession' in navigator) || !('setPositionState' in navigator.mediaSession)) return;
+            if (audioElement.duration && isFinite(audioElement.duration)) {
+                try {
+                    navigator.mediaSession.setPositionState({
+                        duration: audioElement.duration,
+                        playbackRate: audioElement.playbackRate || 1,
+                        position: Math.min(audioElement.currentTime || 0, audioElement.duration)
+                    });
+                } catch (_) {}
+            }
         }
 
         function playSong() {
@@ -1220,11 +1312,13 @@
                 playIcon.classList.add('hidden');
                 pauseIcon.classList.remove('hidden');
                 albumArt.classList.remove('paused-art');
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
             }).catch(err => {
                 console.log("Playback prevented:", err);
                 isPlaying = false;
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
                 // Show user-friendly prompt instead of silent failure
                 if (currentSong) {
                     artistNameEl.textContent = 'Tap ▶ to play · ' + (currentSong.artist || '');
@@ -1238,6 +1332,7 @@
             playIcon.classList.remove('hidden');
             pauseIcon.classList.add('hidden');
             albumArt.classList.add('paused-art');
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
         }
 
         playPauseBtn.addEventListener('click', () => {
@@ -1472,11 +1567,13 @@
                 const percent = (current / audioElement.duration) * 100;
                 progressBar.style.width = `${percent}%`;
                 currentTimeEl.textContent = formatTime(current);
+                updateMediaPosition();
             }
         });
 
         audioElement.addEventListener('loadedmetadata', () => {
             durationEl.textContent = formatTime(audioElement.duration || 0);
+            updateMediaPosition();
         });
 
         audioElement.addEventListener('error', () => {
