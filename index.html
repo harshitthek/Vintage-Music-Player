@@ -652,32 +652,45 @@
         });
         closePlaylistPanel.addEventListener('click', () => playlistPanel.classList.add('hidden'));
 
-        const FALLBACK_SONGS = {
-            "50s": [{"query":"awaara hoon mukesh"},{"query":"mera joota hai japani mukesh"},{"query":"pyar hua iqrar hua shree 420"},{"query":"aaja re pardesi lata mangeshkar"},{"query":"chaudhvin ka chand ho rafi"},{"query":"yeh raat bheegi bheegi lata manna dey"}],
-            "60s": [{"query":"lag jaa gale lata mangeshkar"},{"query":"roop tera mastana kishore kumar"},{"query":"mere sapno ki rani kishore kumar"},{"query":"ehsaan tera hoga mujh par rafi"},{"query":"ye sham mastani kishore kumar"},{"query":"baharon phool barsao rafi"}],
-            "70s": [{"query":"pal pal dil ke paas kishore kumar"},{"query":"kabhi kabhie mere dil mein mukesh"},{"query":"chura liya hai tumne jo dil ko"},{"query":"kheench teer kaman"},{"query":"dum maro dum asha bhosle"},{"query":"kya hua tera wada rafi"}],
-            "80s": [{"query":"dil cheez kya hai asha bhosle"},{"query":"yaad aa raha hai bappi lahiri"},{"query":"hawa hawai kavita krishnamurthy"},{"query":"gazab ka hai din udit narayan"},{"query":"papa kehte hain udit narayan"},{"query":"chehra kya dekhte ho"}],
-            "90s": [{"query":"tujhe dekha to kumar sanu"},{"query":"pehla nasha udit narayan"},{"query":"chaiyya chaiyya sukhwinder singh"},{"query":"sandese aate hain roop kumar"},{"query":"chura ke dil mera kumar sanu"},{"query":"dil to pagal hai lata udit"}],
-            "20s": [{"query":"tum hi ho arijit singh"},{"query":"kesariya arijit singh"},{"query":"kalank arijit singh"},{"query":"shayad arijit singh"},{"query":"channa mereya arijit singh"},{"query":"raataan lambiyan jubin nautiyal"}]
+        const FALLBACK_SEEDS = {
+            "50s": ["awaara hoon mukesh", "mera joota hai japani", "pyar hua iqrar hua", "aaja re pardesi lata", "chaudhvin ka chand rafi", "yeh raat bheegi bheegi"],
+            "60s": ["lag ja gale lata", "roop tera mastana kishore", "mere sapno ki rani kishore", "ehsaan tera hoga rafi", "ye shaam mastani", "baharon phool barsao"],
+            "70s": ["pal pal dil ke paas kishore", "kabhi kabhie mere dil mein mukesh", "chura liya hai tumne", "dum maro dum asha", "kya hua tera wada rafi", "o mere dil ke chain"],
+            "80s": ["dil cheez kya hai asha", "yaad aa raha hai bappi", "hawa hawai kavita", "gazab ka hai din udit", "papa kehte hain udit", "tum itna jo muskura rahe ho"],
+            "90s": ["tujhe dekha to kumar sanu", "pehla nasha udit", "chaiyya chaiyya sukhwinder", "kuch kuch hota hai udit", "chura ke dil mera", "dil to pagal hai"],
+            "20s": ["kesariya arijit singh", "raataan lambiyan jubin", "tum hi ho arijit", "shayad arijit singh", "channa mereya", "heeriye jasleen arijit"]
         };
-
-        let songsDb = null; 
-
-        async function loadSongsDb() {
-            if (songsDb) return songsDb;
-            try {
-                const res = await fetch('songs.json');
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                songsDb = await res.json();
-            } catch (e) {
-                console.warn('Using fallback songs catalog:', e);
-                songsDb = FALLBACK_SONGS;
-            }
-            return songsDb || FALLBACK_SONGS;
-        }
 
         function pickRandom(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        async function fetchDecadeSongs(decade) {
+            const d = decade || activeDecadeFilter || 'all';
+            try {
+                const res = await fetch(`/api/search?decade=${encodeURIComponent(d)}&limit=8`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.results && data.results.length > 0) {
+                        return data.results.map(s => ({
+                            id: s.id,
+                            title: s.title,
+                            artist: s.artist,
+                            album: s.album,
+                            decade: s.decade || d,
+                            artwork: s.artwork,
+                            previewUrl: s.streamUrl,
+                            duration: s.duration,
+                            isFullSong: true,
+                            liked: likedPreviews.some(lp => lp.id === s.id)
+                        }));
+                    }
+                }
+            } catch (_) {}
+
+            const fallbackList = (d === 'all') ? Object.values(FALLBACK_SEEDS).flat() : (FALLBACK_SEEDS[d] || []);
+            const seed = pickRandom(fallbackList);
+            return fetchFullSongs(seed);
         }
 
         async function fetchFullSongs(query) {
@@ -741,13 +754,8 @@
             if (isPreloading) return;
             isPreloading = true;
             try {
-                const db = await loadSongsDb();
-                if (!db) return;
                 const targetDecade = decade || activeDecadeFilter;
-                let pool = (targetDecade === 'all') ? Object.values(db).flat() : (db[targetDecade] || []);
-                if (!pool.length) return;
-                const entry = pickRandom(pool);
-                const songs = await fetchFullSongs(entry.query);
+                const songs = await fetchDecadeSongs(targetDecade);
                 if (songs && songs.length > 0) {
                     const song = pickRandom(songs);
                     if (targetDecade !== 'all') song.decade = targetDecade;
@@ -788,29 +796,12 @@
                 return;
             }
 
-            // 2. Direct fast fetch of 1 candidate
+            // 2. Direct fast fetch of dynamic decade stream
             songTitleEl.textContent = '🎲 Rolling the dice…';
             artistNameEl.textContent = `Finding a classic from ${decadeLabel}`;
 
             try {
-                const db = await loadSongsDb();
-                if (!db) throw new Error('Could not load songs database');
-
-                let pool = (activeDecadeFilter === 'all') ? Object.values(db).flat() : (db[activeDecadeFilter] || []);
-                if (!pool.length) throw new Error('No songs found for this decade');
-
-                const entry = pickRandom(pool);
-                let songs = await fetchFullSongs(entry.query);
-
-                if (!songs || !songs.length) {
-                    const fallbackQuery = activeDecadeFilter === '50s' ? 'awaara hoon' :
-                                         activeDecadeFilter === '60s' ? 'lag ja gale' :
-                                         activeDecadeFilter === '70s' ? 'chura liya hai' :
-                                         activeDecadeFilter === '80s' ? 'dil cheez kya' :
-                                         activeDecadeFilter === '90s' ? 'pehla nasha' : 'kesariya';
-                    songs = await fetchFullSongs(fallbackQuery);
-                }
-
+                let songs = await fetchDecadeSongs(activeDecadeFilter);
                 if (!songs || !songs.length) throw new Error('Could not tune in — tap Dice again');
 
                 const song = pickRandom(songs);
@@ -893,38 +884,33 @@
             }
 
             if (library.length === 0) {
-                const decadeTitle = (DECADE_LABELS[activeDecadeFilter] || 'Vintage') + ' Classics';
+                const decadeTitle = (DECADE_LABELS[activeDecadeFilter] || 'Vintage') + ' Hits';
                 playlistPanelTitle.textContent = decadeTitle;
-                loadSongsDb().then(db => {
+                fetchDecadeSongs(activeDecadeFilter).then(songs => {
                     if (playlistPanel.classList.contains('hidden') || playlistPanel.dataset.mode === 'likes') return;
                     playlistList.innerHTML = '';
-                    const pool = (activeDecadeFilter === 'all') ? Object.values(db).flat() : (db[activeDecadeFilter] || []);
-                    if (!pool.length) {
+                    if (!songs || !songs.length) {
                         playlistEmptyMsg.classList.remove('hidden');
                         playlistEmptyMsg.textContent = "No songs found for this decade.";
                         return;
                     }
                     playlistEmptyMsg.classList.add('hidden');
-                    pool.slice(0, 50).forEach(item => {
+                    currentPreviewList = songs;
+                    songs.forEach((song, idx) => {
+                        const isCurrent = currentSong && currentSong.id === song.id;
                         const li = document.createElement('li');
-                        li.className = 'flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all';
-                        const songTitle = item.title || item.query;
-                        const songArtist = item.artist ? `${item.artist} · ` : '';
-                        const decadeStr = DECADE_LABELS[item.decade || activeDecadeFilter] || 'Vintage';
+                        li.className = `flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all ${isCurrent ? 'bg-white/15' : ''}`;
                         li.innerHTML = `
                             <div class="min-w-0 flex-1">
-                                <p class="text-xs font-semibold text-white truncate">${escapeHtml(songTitle)}</p>
-                                <p class="text-[10px] text-white/60 truncate">${escapeHtml(songArtist)}${decadeStr}</p>
+                                <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                                <p class="text-[10px] text-white/60 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade || activeDecadeFilter] || 'Vintage'}</p>
                             </div>
                             <svg class="w-3.5 h-3.5 text-amber-200/60 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
                         `;
-                        li.addEventListener('click', async () => {
-                            li.classList.add('bg-white/20');
-                            const songs = await fetchFullSongs(item.query || item.title);
-                            if (songs && songs.length > 0) {
-                                currentPreviewList = songs;
-                                playPreviewSong(songs[0], 0);
-                            }
+                        li.addEventListener('click', () => {
+                            playlistList.querySelectorAll('li').forEach(el => el.classList.remove('bg-white/15'));
+                            li.classList.add('bg-white/15');
+                            playPreviewSong(song, idx);
                         });
                         playlistList.appendChild(li);
                     });
