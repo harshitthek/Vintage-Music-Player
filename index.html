@@ -227,6 +227,37 @@
 
         .active-chip { background: rgba(255,255,255,0.28) !important; }
 
+        #volumeSlider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 9999px;
+            outline: none;
+        }
+        #volumeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(251, 191, 36, 0.7);
+            transition: transform 0.15s ease;
+        }
+        #volumeSlider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+        #volumeSlider::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(251, 191, 36, 0.7);
+            border: none;
+        }
+
         #discoverPanel, #discoverResults, #discoverSuggestions, #playlistPanel, #playlistList {
             scrollbar-width: none;     
             -ms-overflow-style: none;    
@@ -436,6 +467,19 @@
                         <button id="nextBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Next Song">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                         </button>
+
+                        <!-- Volume & Mute Control -->
+                        <div class="relative group/vol flex items-center">
+                            <button id="volumeBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white transition-all active:scale-95 flex-shrink-0" title="Mute / Adjust Volume">
+                                <svg id="volumeHighIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                                <svg id="volumeLowIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current hidden" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                                <svg id="volumeMuteIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current hidden text-red-400" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                            </button>
+                            <!-- Hover / Click Slider Popover -->
+                            <div id="volumeSliderWrap" class="opacity-0 pointer-events-none group-hover/vol:opacity-100 group-hover/vol:pointer-events-auto absolute bottom-full mb-3 left-1/2 -translate-x-1/2 md:bottom-auto md:mb-0 md:left-full md:ml-1 md:translate-x-0 transition-all duration-200 ease-out flex items-center bg-neutral-900/90 border border-white/10 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-2xl z-40">
+                                <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1" class="w-16 sm:w-20 h-1.5 rounded-lg appearance-none cursor-pointer" title="Adjust Volume" />
+                            </div>
+                        </div>
 
                     </div>
 
@@ -1326,6 +1370,69 @@
         playPauseBtn.addEventListener('click', () => {
             if (isPlaying) pauseSong(); else playSong();
         });
+
+        // Volume and Mute Controls
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeSliderWrap = document.getElementById('volumeSliderWrap');
+        const volumeHighIcon = document.getElementById('volumeHighIcon');
+        const volumeLowIcon = document.getElementById('volumeLowIcon');
+        const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+
+        let currentVolume = parseFloat(localStorage.getItem('bonfireRadioVolume') || '1.0');
+        if (isNaN(currentVolume) || currentVolume < 0 || currentVolume > 1) currentVolume = 1.0;
+        let previousVolume = currentVolume > 0 ? currentVolume : 1.0;
+        let isMuted = currentVolume === 0;
+
+        function updateVolumeUI(vol) {
+            if (!volumeHighIcon || !volumeLowIcon || !volumeMuteIcon) return;
+            if (vol === 0 || isMuted) {
+                volumeHighIcon.classList.add('hidden');
+                volumeLowIcon.classList.add('hidden');
+                volumeMuteIcon.classList.remove('hidden');
+            } else if (vol <= 0.5) {
+                volumeHighIcon.classList.add('hidden');
+                volumeLowIcon.classList.remove('hidden');
+                volumeMuteIcon.classList.add('hidden');
+            } else {
+                volumeHighIcon.classList.remove('hidden');
+                volumeLowIcon.classList.add('hidden');
+                volumeMuteIcon.classList.add('hidden');
+            }
+            if (volumeSlider) volumeSlider.value = vol;
+        }
+
+        function setVolume(vol, persist = true) {
+            currentVolume = Math.min(Math.max(vol, 0), 1);
+            isMuted = (currentVolume === 0);
+            audioElement.volume = currentVolume;
+            updateVolumeUI(currentVolume);
+            if (persist) {
+                localStorage.setItem('bonfireRadioVolume', currentVolume);
+            }
+        }
+
+        // Initialize audio volume on page load
+        setVolume(currentVolume, false);
+
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                setVolume(val);
+            });
+        }
+
+        if (volumeBtn) {
+            volumeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentVolume > 0) {
+                    previousVolume = currentVolume;
+                    setVolume(0);
+                } else {
+                    setVolume(previousVolume || 1.0);
+                }
+            });
+        }
 
         const hiddenDietCoke = document.getElementById('hiddenDietCoke');
         
