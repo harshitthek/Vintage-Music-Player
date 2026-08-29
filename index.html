@@ -908,17 +908,19 @@
                     pool.slice(0, 50).forEach(item => {
                         const li = document.createElement('li');
                         li.className = 'flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-all';
-                        const cleanTitle = item.query.replace(/\b(19\d\d|20\d\d)\b/g, '').replace(/[^\w\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+                        const songTitle = item.title || item.query;
+                        const songArtist = item.artist ? `${item.artist} · ` : '';
+                        const decadeStr = DECADE_LABELS[item.decade || activeDecadeFilter] || 'Vintage';
                         li.innerHTML = `
                             <div class="min-w-0 flex-1">
-                                <p class="text-xs font-semibold text-white truncate capitalize">${escapeHtml(cleanTitle)}</p>
-                                <p class="text-[10px] text-white/60 truncate">${DECADE_LABELS[activeDecadeFilter] || 'Vintage Classic'}</p>
+                                <p class="text-xs font-semibold text-white truncate">${escapeHtml(songTitle)}</p>
+                                <p class="text-[10px] text-white/60 truncate">${escapeHtml(songArtist)}${decadeStr}</p>
                             </div>
                             <svg class="w-3.5 h-3.5 text-amber-200/60 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
                         `;
                         li.addEventListener('click', async () => {
                             li.classList.add('bg-white/20');
-                            const songs = await fetchFullSongs(item.query);
+                            const songs = await fetchFullSongs(item.query || item.title);
                             if (songs && songs.length > 0) {
                                 currentPreviewList = songs;
                                 playPreviewSong(songs[0], 0);
