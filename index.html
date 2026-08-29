@@ -402,102 +402,97 @@
             </div>
         </div>
 
-        <!-- Bottom Audio Player Container -->
-        <div class="w-full max-w-2xl z-30 pb-3 sm:pb-6 md:pb-8 px-2 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-3 opacity-0 animate-player">
+        <!-- Bottom Audio Player Container (Unified Balanced Dock) -->
+        <div class="w-full max-w-4xl z-30 pb-3 sm:pb-5 md:pb-6 px-3 sm:px-6 flex items-center justify-center opacity-0 animate-player">
+            <audio id="audioElement"></audio>
 
-            <div class="flex-1 min-w-0 h-[74px] sm:h-[82px] md:h-[88px]">
+            <div class="mac-glass w-full rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 md:p-3.5 shadow-2xl relative overflow-visible border border-white/15 backdrop-blur-xl">
+                <div class="absolute inset-0 bg-[#b34721] mix-blend-multiply opacity-10 pointer-events-none rounded-2xl sm:rounded-3xl"></div>
+                <div class="absolute inset-0 paper-grain opacity-20 pointer-events-none rounded-2xl sm:rounded-3xl"></div>
 
-                <audio id="audioElement"></audio>
+                <div class="flex items-center justify-between gap-2 sm:gap-4 md:gap-6 relative z-10 w-full">
 
-                <div class="mac-glass rounded-2xl sm:rounded-3xl h-full px-2.5 sm:px-4 md:px-5 flex items-center justify-between gap-2 sm:gap-3 md:gap-4 text-neutral-100 relative overflow-hidden">
-                 
-                    <div class="absolute inset-0 bg-[#b34721] mix-blend-multiply opacity-10 pointer-events-none"></div>
-                    <div class="absolute inset-0 paper-grain opacity-30 pointer-events-none"></div>
-
-                    <!-- Album Art Vinyl -->
-                    <div class="relative flex-shrink-0 cursor-pointer group shadow-lg rounded-full" id="uploadTrigger" title="Click to add local music files">
-                        <div class="w-11 h-11 sm:w-13 sm:h-13 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/20 transition-transform group-hover:scale-105">
-                            <img id="albumArt" src="models/main.webp" alt="Artwork" class="w-full h-full object-cover rotating-art paused-art" onerror="this.onerror=null;this.src='models/main.webp';" />
+                    <!-- Left Column: Vinyl Artwork & Song Metadata -->
+                    <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-shrink sm:flex-1 max-w-[170px] sm:max-w-[240px] md:max-w-[280px]">
+                        <div class="relative flex-shrink-0 cursor-pointer group shadow-lg rounded-full" id="uploadTrigger" title="Click to add local music files">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 md:w-13 md:h-13 rounded-full overflow-hidden border-2 border-white/20 transition-transform group-hover:scale-105">
+                                <img id="albumArt" src="models/main.webp" alt="Artwork" class="w-full h-full object-cover rotating-art paused-art" onerror="this.onerror=null;this.src='models/main.webp';" />
+                            </div>
+                            <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </div>
                         </div>
-                        <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white/80 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            <span class="text-[8px] sm:text-[9px] text-white font-medium">MUSIC</span>
+                        <input type="file" id="audioFileInput" accept="audio/*" multiple class="hidden">
+
+                        <div class="min-w-0 flex-1 truncate">
+                            <h2 id="songTitle" class="text-xs sm:text-sm md:text-[15px] font-bold text-white truncate drop-shadow-sm leading-snug">Waiting for input...</h2>
+                            <p id="artistName" class="text-[10px] sm:text-xs text-white/70 font-medium truncate mt-0.5">Add music to start</p>
                         </div>
                     </div>
 
-                    <input type="file" id="audioFileInput" accept="audio/*" multiple class="hidden">
+                    <!-- Center Column: Transport Controls & Scrubber Timeline -->
+                    <div class="flex flex-col items-center justify-center flex-1 max-w-[260px] sm:max-w-md px-1 min-w-0">
+                        <!-- Transport Buttons -->
+                        <div class="flex items-center gap-2 sm:gap-3 md:gap-4 mb-1">
+                            <button id="prevBtn" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white transition-all active:scale-95 disabled:opacity-40" title="Previous Song">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                            </button>
 
-                    <!-- Track Info & Scrubber -->
-                    <div class="flex-grow min-w-0 flex flex-col justify-center gap-1 sm:gap-2 py-0.5">
-                        <div class="truncate text-center">
-                            <h2 id="songTitle" class="text-xs sm:text-sm md:text-base font-semibold text-white truncate drop-shadow-sm">Waiting for input...</h2>
-                            <p id="artistName" class="text-[10px] sm:text-xs text-white/70 font-medium truncate">Add music to start</p>
+                            <button id="playPauseBtn" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-white text-[#b34721] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 flex-shrink-0" title="Play / Pause">
+                                <svg id="playIcon" class="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
+                                <svg id="pauseIcon" class="w-4 h-4 sm:w-5 sm:h-5 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            </button>
+
+                            <button id="nextBtn" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white transition-all active:scale-95 disabled:opacity-40" title="Next Song">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                            </button>
                         </div>
 
+                        <!-- Progress Bar & Timestamps -->
                         <div class="flex items-center gap-1.5 sm:gap-2 w-full">
-                            <span id="currentTime" class="text-[9px] sm:text-[11px] font-mono text-white/60 w-7 sm:w-10 text-right">00:00</span>
-                          
+                            <span id="currentTime" class="text-[9px] sm:text-[10px] font-mono text-white/60 w-7 sm:w-8 text-right flex-shrink-0">00:00</span>
                             <div class="flex-grow bg-white/20 h-1.5 rounded-full overflow-visible cursor-pointer group relative" id="progressBarContainer">
                                 <div id="progressBar" class="bg-white h-full w-0 rounded-full relative transition-all duration-75 ease-linear shadow-md">
                                     <div class="progress-thumb"></div>
                                 </div>
                             </div>
-                            <span id="duration" class="text-[9px] sm:text-[11px] font-mono text-white/60 w-7 sm:w-10 text-left">00:00</span>
+                            <span id="duration" class="text-[9px] sm:text-[10px] font-mono text-white/60 w-7 sm:w-8 text-left flex-shrink-0">00:00</span>
                         </div>
                     </div>
 
-                    <!-- Transport Controls -->
-                    <div class="flex items-center gap-0.5 sm:gap-1 md:gap-2 flex-shrink-0">
-
-                        <button id="likeBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40 relative overflow-visible" title="Like this song" disabled>
+                    <!-- Right Column: Utility Controls (Like, Volume, Dice) -->
+                    <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 justify-end flex-shrink sm:flex-1 max-w-[170px] sm:max-w-[240px] md:max-w-[280px]">
+                        <button id="likeBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-pink-300 transition-all active:scale-95 disabled:opacity-40 relative overflow-visible flex-shrink-0" title="Like this song" disabled>
                             <svg id="likeIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.716-4.35-9.428-8.06C.86 10.42 1.2 6.9 3.9 5.2c2.3-1.44 5.02-.8 6.6 1.16.5.62.9 1.3 1.5 1.94.6-.64 1-1.32 1.5-1.94 1.58-1.96 4.3-2.6 6.6-1.16 2.7 1.7 3.04 5.22 1.33 7.74C18.72 16.65 12 21 12 21z"/>
                             </svg>
                         </button>
 
-                        <button id="prevBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Previous Song">
-                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                        </button>
-
-                        <button id="playPauseBtn" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white text-[#b34721] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 flex-shrink-0" title="Play / Pause">
-                            <svg id="playIcon" class="w-5 h-5 sm:w-6 sm:h-6 fill-current" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
-                            <svg id="pauseIcon" class="w-4 h-4 sm:w-5 sm:h-5 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        </button>
-
-                        <button id="nextBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 transition-all active:scale-95 disabled:opacity-40" title="Next Song">
-                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                        </button>
-
-                        <!-- Volume & Mute Control -->
-                        <div class="relative group/vol flex items-center">
-                            <button id="volumeBtn" class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white transition-all active:scale-95 flex-shrink-0" title="Mute / Adjust Volume">
+                        <!-- Volume Slider -->
+                        <div class="hidden sm:flex items-center gap-1.5 group/vol">
+                            <button id="volumeBtn" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white transition-all active:scale-95 flex-shrink-0" title="Mute / Adjust Volume">
                                 <svg id="volumeHighIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
                                 <svg id="volumeLowIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current hidden" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
                                 <svg id="volumeMuteIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current hidden text-red-400" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
                             </button>
-                            <!-- Hover / Click Slider Popover -->
-                            <div id="volumeSliderWrap" class="opacity-0 pointer-events-none group-hover/vol:opacity-100 group-hover/vol:pointer-events-auto absolute bottom-full mb-3 left-1/2 -translate-x-1/2 md:bottom-auto md:mb-0 md:left-full md:ml-1 md:translate-x-0 transition-all duration-200 ease-out flex items-center bg-neutral-900/90 border border-white/10 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-2xl z-40">
-                                <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1" class="w-16 sm:w-20 h-1.5 rounded-lg appearance-none cursor-pointer" title="Adjust Volume" />
-                            </div>
+                            <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1" class="w-14 sm:w-16 md:w-20 h-1.5 rounded-lg appearance-none cursor-pointer" title="Adjust Volume" />
                         </div>
 
+                        <!-- Dice Button -->
+                        <button id="playerPlaylistBtn" class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/80 hover:text-white transition-all shadow-md group flex-shrink-0 cursor-pointer" title="Discover Random Song (Click or press Enter)">
+                            <svg id="diceIcon" class="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:rotate-12 duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
+                                <circle cx="8"  cy="8"  r="1.1" fill="currentColor" stroke="none"/>
+                                <circle cx="16" cy="8"  r="1.1" fill="currentColor" stroke="none"/>
+                                <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+                                <circle cx="8"  cy="16" r="1.1" fill="currentColor" stroke="none"/>
+                                <circle cx="16" cy="16" r="1.1" fill="currentColor" stroke="none"/>
+                            </svg>
+                        </button>
                     </div>
 
                 </div>
             </div>
-
-            <!-- Dice Button -->
-            <button id="playerPlaylistBtn" class="mac-glass cursor-pointer flex-shrink-0 h-[74px] w-[74px] sm:h-[82px] sm:w-[82px] md:h-[88px] md:w-[88px] rounded-2xl sm:rounded-3xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 active:scale-95 transition-all shadow-lg group" title="Discover Random Song (Click or press Enter)">
-                <svg id="diceIcon" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 transition-transform group-hover:rotate-12 duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
-                    <circle cx="8"  cy="8"  r="1.1" fill="currentColor" stroke="none"/>
-                    <circle cx="16" cy="8"  r="1.1" fill="currentColor" stroke="none"/>
-                    <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>
-                    <circle cx="8"  cy="16" r="1.1" fill="currentColor" stroke="none"/>
-                    <circle cx="16" cy="16" r="1.1" fill="currentColor" stroke="none"/>
-                </svg>
-            </button>
-
         </div>
 
     </div>
