@@ -788,6 +788,44 @@
         let diceHistoryPos = -1;
         let preloadedDiceSong = null;
         let isPreloading = false;
+        let recentlyPlayedSongKeys = [];
+
+        function cleanSongKey(song) {
+            if (!song) return '';
+            const t = (song.title || '').toLowerCase().replace(/\(.*?\)/g, '').replace(/[^\w]/g, '').slice(0, 10);
+            const a = (song.artist || '').toLowerCase().replace(/[^\w]/g, '').slice(0, 8);
+            return `${t}-${a}`;
+        }
+
+        function pickNonRepeatingSong(songs) {
+            if (!songs || !songs.length) return null;
+            if (songs.length === 1) return songs[0];
+
+            // Filter out junk/remixes/slowed versions if normal tracks exist
+            const cleanTracks = songs.filter(s => {
+                const titleLower = (s.title || '').toLowerCase();
+                return !titleLower.includes('slowed') && !titleLower.includes('reverb') && !titleLower.includes('lofi flip');
+            });
+            const validPool = cleanTracks.length > 0 ? cleanTracks : songs;
+
+            // Filter out songs played in recent dice rolls
+            const unplayed = validPool.filter(s => {
+                const key = cleanSongKey(s);
+                return !recentlyPlayedSongKeys.includes(key);
+            });
+
+            const poolToPick = unplayed.length > 0 ? unplayed : validPool.filter(s => currentSong && cleanSongKey(s) !== cleanSongKey(currentSong));
+            const chosen = pickRandom(poolToPick.length > 0 ? poolToPick : validPool);
+
+            if (chosen) {
+                const key = cleanSongKey(chosen);
+                recentlyPlayedSongKeys.push(key);
+                if (recentlyPlayedSongKeys.length > 15) {
+                    recentlyPlayedSongKeys.shift();
+                }
+            }
+            return chosen;
+        }
 
         async function preloadNextDiceSong(decade) {
             if (isPreloading) return;
@@ -796,9 +834,11 @@
                 const targetDecade = decade || activeDecadeFilter;
                 const songs = await fetchDecadeSongs(targetDecade);
                 if (songs && songs.length > 0) {
-                    const song = pickRandom(songs);
-                    if (targetDecade !== 'all') song.decade = targetDecade;
-                    preloadedDiceSong = song;
+                    const song = pickNonRepeatingSong(songs);
+                    if (song) {
+                        if (targetDecade !== 'all') song.decade = targetDecade;
+                        preloadedDiceSong = song;
+                    }
                 }
             } catch (_) {}
             finally { isPreloading = false; }
@@ -843,7 +883,8 @@
                 let songs = await fetchDecadeSongs(activeDecadeFilter);
                 if (!songs || !songs.length) throw new Error('Could not tune in — tap Dice again');
 
-                const song = pickRandom(songs);
+                const song = pickNonRepeatingSong(songs);
+                if (!song) throw new Error('Could not pick a song');
                 if (activeDecadeFilter !== 'all') song.decade = activeDecadeFilter;
 
                 diceHistory = diceHistory.slice(0, diceHistoryPos + 1);
