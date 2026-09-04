@@ -254,8 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.innerHTML = `
                         <img src="${song.artwork || 'models/main.webp'}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-stone-800" />
                         <div class="min-w-0 flex-1">
-                            <p class="text-xs font-semibold text-stone-100 truncate">${escapeHtml(song.title)}</p>
-                            <p class="text-[10px] text-stone-400 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade] || song.decade}</p>
+                            <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                            <p class="text-[10px] text-white/70 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade] || song.decade}</p>
                         </div>
                         <span class="text-[10px] text-amber-300/90 bg-amber-900/40 px-2 py-0.5 rounded-full flex-shrink-0 border border-amber-500/30 font-medium">Play ▶</span>
                     `;

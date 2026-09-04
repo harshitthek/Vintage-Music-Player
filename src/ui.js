@@ -90,8 +90,8 @@ export function showShortcutToast() {
     localStorage.setItem('sawBonfireShortcuts', '1');
     
     const toast = document.createElement('div');
-    toast.className = 'shortcut-toast vintage-console px-3.5 py-1.5 rounded-full text-[11px] text-stone-200 flex items-center gap-2 shadow-2xl border border-amber-500/20 select-none';
-    toast.innerHTML = `<span class="text-amber-400">⌨</span> <span><b>Enter</b> Random</span> · <span><b>Space</b> Play/Pause</span> · <span><b>← →</b> Prev/Next</span>`;
+    toast.className = 'shortcut-toast mac-glass px-3.5 py-1.5 rounded-full text-[11px] text-white/80 flex items-center gap-2 shadow-2xl border border-white/20 select-none';
+    toast.innerHTML = `<span class="text-amber-300">⌨</span> <span><b>Enter</b> Random</span> · <span><b>Space</b> Play/Pause</span> · <span><b>← →</b> Prev/Next</span>`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 5200);
 }
@@ -102,12 +102,12 @@ export function updateDecadeChipStyles(decadeFilterBar) {
         const dec = btn.dataset.decade;
         if (dec === state.activeDecadeFilter) {
             btn.classList.add('active-chip', 'decade-chip-glow');
-            btn.classList.remove('text-stone-300');
-            btn.classList.add('text-amber-200');
+            btn.classList.remove('text-white/70');
+            btn.classList.add('text-white/90');
         } else {
             btn.classList.remove('active-chip', 'decade-chip-glow');
-            btn.classList.add('text-stone-300');
-            btn.classList.remove('text-amber-200');
+            btn.classList.add('text-white/70');
+            btn.classList.remove('text-white/90');
         }
     });
 }
@@ -157,8 +157,8 @@ export function renderPlaylistPanel(dom) {
             const badge = entry.kind === 'preview' ? ' · Full Song' : '';
             li.innerHTML = `
                 <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold text-stone-100 truncate">${escapeHtml(song.title)}</p>
-                    <p class="text-[10px] text-stone-400 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}${badge}</p>
+                    <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                    <p class="text-[10px] text-white/70 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}${badge}</p>
                 </div>
                 <span class="like-dot text-pink-400 text-xs flex-shrink-0">♥</span>
             `;
@@ -197,8 +197,8 @@ export function renderPlaylistPanel(dom) {
                 li.className = `flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl hover:bg-white/10 cursor-pointer transition-all ${isCurrent ? 'bg-amber-500/20 border border-amber-500/30' : ''}`;
                 li.innerHTML = `
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs font-semibold text-stone-100 truncate">${escapeHtml(song.title)}</p>
-                        <p class="text-[10px] text-stone-400 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade || state.activeDecadeFilter] || 'Vintage'}</p>
+                        <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                        <p class="text-[10px] text-white/70 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade || state.activeDecadeFilter] || 'Vintage'}</p>
                     </div>
                     <svg class="w-3.5 h-3.5 text-amber-400/80 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 5.5v13l10-6.5z"/></svg>
                 `;
@@ -231,8 +231,8 @@ export function renderPlaylistPanel(dom) {
         li.className = 'flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl hover:bg-white/10 cursor-pointer transition-all ' + (i === state.currentLibIndex ? 'bg-amber-500/20 border border-amber-500/30' : '');
         li.innerHTML = `
             <div class="min-w-0 flex-1">
-                <p class="text-xs font-semibold text-stone-100 truncate">${escapeHtml(song.title)}</p>
-                <p class="text-[10px] text-stone-400 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}</p>
+                <p class="text-xs font-semibold text-white truncate">${escapeHtml(song.title)}</p>
+                <p class="text-[10px] text-white/70 truncate">${escapeHtml(song.artist)} · ${DECADE_LABELS[song.decade]}</p>
             </div>
             <span class="like-dot text-pink-400 text-xs flex-shrink-0">${song.liked ? '♥' : ''}</span>
         `;
